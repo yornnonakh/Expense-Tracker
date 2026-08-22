@@ -2,23 +2,29 @@
 //  ContentView.swift
 //  expense_tracker
 //
-//  Created by Yorn Nona on 22/8/26.
+//  Thin wrapper kept as the app's conventional entry view. The actual
+//  routing decision lives in `RootView`.
 //
 
 import SwiftUI
 
 struct ContentView: View {
+
+    private let container: DIContainer
+
+    init(container: DIContainer = .shared) {
+        self.container = container
+    }
+
     var body: some View {
-        VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundStyle(.tint)
-            Text("Hello, world!")
-        }
-        .padding()
+        RootView(container: container)
     }
 }
 
+// MARK: - Preview
+
 #Preview {
-    ContentView()
+    let container = DIContainer.preview
+    return ContentView(container: container)
+        .environmentObject(container.makeAuthViewModel())
 }
