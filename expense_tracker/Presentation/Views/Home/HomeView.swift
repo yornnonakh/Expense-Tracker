@@ -50,8 +50,7 @@ struct HomeView: View {
             AddExpenseSheetView(container: container)
         }
         .sheet(isPresented: $showAccountSheet) {
-            AccountSheetView()
-                .environmentObject(authViewModel)
+            AccountSheetView(authViewModel: authViewModel, container: container)
         }
         // Two subscriptions: the first loads and then watches expense writes,
         // the second watches budget writes. Both are torn down with the view.
@@ -70,6 +69,7 @@ struct HomeView: View {
                     greeting: viewModel.greeting,
                     userName: authViewModel.currentUser?.firstName ?? "there",
                     initials: authViewModel.currentUser?.initials ?? "?",
+                    avatarImageData: authViewModel.currentUser?.avatarImageData,
                     spentThisMonth: viewModel.statistics.totalSpending
                 ) {
                     showAccountSheet = true

@@ -32,6 +32,8 @@ final class DIContainer {
     // MARK: - Storage
 
     let keyValueStore: KeyValueStore
+    /// Separate from `keyValueStore` on purpose — see `ProfileImageStore`.
+    let profileImageStore: ProfileImageStore
 
     // MARK: - Data sources
 
@@ -62,6 +64,8 @@ final class DIContainer {
     let requestPasswordResetUseCase: RequestPasswordResetUseCase
     let restoreSessionUseCase: RestoreSessionUseCase
     let signOutUseCase: SignOutUseCase
+    let updateProfileImageUseCase: UpdateProfileImageUseCase
+    let removeProfileImageUseCase: RemoveProfileImageUseCase
 
     // MARK: - Services
 
@@ -71,18 +75,24 @@ final class DIContainer {
 
     /// - Parameters:
     ///   - keyValueStore: swap for `InMemoryKeyValueStore` in tests/previews.
+    ///   - profileImageStore: swap for `InMemoryProfileImageStore` in
+    ///     tests/previews, so neither writes photos into the real container.
     ///   - enableRemoteSync: when false, no simulated backend is wired in and
     ///     the repository stays purely local.
     init(
         keyValueStore: KeyValueStore = UserDefaultsStore(),
+        profileImageStore: ProfileImageStore = FileProfileImageStore(),
         enableRemoteSync: Bool = true
     ) {
         self.keyValueStore = keyValueStore
+        self.profileImageStore = profileImageStore
 
         // Data sources
         self.localExpenseDataSource = LocalExpenseDataSource(store: keyValueStore)
         self.localBudgetDataSource = LocalBudgetDataSource(store: keyValueStore)
-        self.localAuthDataSource = LocalAuthDataSource(store: keyValueStore)
+        self.localAuthDataSource = LocalAuthDataSource(
+            store: keyValueStore, imageStore: profileImageStore
+        )
         self.remoteExpenseDataSource = enableRemoteSync
             ? RemoteExpenseDataSource()
             : nil
@@ -122,6 +132,12 @@ final class DIContainer {
         )
         self.restoreSessionUseCase = RestoreSessionUseCase(repository: authRepository)
         self.signOutUseCase = SignOutUseCase(repository: authRepository)
+        self.updateProfileImageUseCase = UpdateProfileImageUseCase(
+            repository: authRepository
+        )
+        self.removeProfileImageUseCase = RemoveProfileImageUseCase(
+            repository: authRepository
+        )
 
         // Services
         self.sampleDataSeeder = SampleDataSeeder(
@@ -150,6 +166,14 @@ final class DIContainer {
 
     func makeSignUpViewModel(authViewModel: AuthViewModel) -> SignUpViewModel {
         SignUpViewModel(signUp: signUpUseCase, authViewModel: authViewModel)
+    }
+
+    func makeProfileViewModel(authViewModel: AuthViewModel) -> ProfileViewModel {
+        ProfileViewModel(
+            updateProfileImage: updateProfileImageUseCase,
+            removeProfileImage: removeProfileImageUseCase,
+            authViewModel: authViewModel
+        )
     }
 
     func makeForgotPasswordViewModel() -> ForgotPasswordViewModel {
@@ -229,11 +253,19 @@ extension DIContainer {
         // Mark seeding done so the seeder doesn't duplicate the above.
         store.set(Data([1]), forKey: StorageKey.hasSeededSampleData)
 
-        return DIContainer(keyValueStore: store, enableRemoteSync: false)
+        return DIContainer(
+            keyValueStore: store,
+            profileImageStore: InMemoryProfileImageStore(),
+            enableRemoteSync: false
+        )
     }()
 
     /// An empty in-memory graph, for exercising empty states.
     static func makeEmptyPreview() -> DIContainer {
-        DIContainer(keyValueStore: InMemoryKeyValueStore(), enableRemoteSync: false)
+        DIContainer(
+            keyValueStore: InMemoryKeyValueStore(),
+            profileImageStore: InMemoryProfileImageStore(),
+            enableRemoteSync: false
+        )
     }
 }

@@ -8,7 +8,7 @@
 
 import Foundation
 
-struct Expense: Identifiable, Codable, Hashable, Sendable {
+nonisolated struct Expense: Identifiable, Codable, Hashable, Sendable {
 
     /// Stable identity. Assigned once at creation and never rewritten, so an
     /// edit of an existing expense keeps pointing at the same record.
@@ -42,7 +42,7 @@ struct Expense: Identifiable, Codable, Hashable, Sendable {
 
 // MARK: - Derived values
 
-extension Expense {
+nonisolated extension Expense {
 
     /// Start-of-day for this expense, the key we group transactions by.
     /// Uses the current calendar so grouping follows the user's locale.
@@ -58,7 +58,7 @@ extension Expense {
 
 // MARK: - Sorting
 
-extension Array where Element == Expense {
+nonisolated extension Array where Element == Expense {
 
     /// The app shows spending newest-first everywhere. Ties break on `id` so
     /// the order is deterministic — important for stable SwiftUI list identity

@@ -7,7 +7,7 @@
 
 import Foundation
 
-enum DateRangeFilter: String, CaseIterable, Identifiable, Hashable, Sendable {
+nonisolated enum DateRangeFilter: String, CaseIterable, Identifiable, Hashable, Sendable {
     case thisMonth
     case lastMonth
     case thisYear

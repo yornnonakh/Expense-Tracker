@@ -93,7 +93,7 @@ struct AddExpenseSheetView: View {
         // Dismissal is driven by the view model's success flag rather than
         // inline in the button, so the sheet closes only after the write
         // actually committed.
-        .onChange(of: viewModel.isSuccess) { isSuccess in
+        .onChange(of: viewModel.isSuccess) { _, isSuccess in
             if isSuccess { dismiss() }
         }
     }

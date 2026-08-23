@@ -14,7 +14,7 @@
 
 import Foundation
 
-struct AccountDTO: Codable, Equatable {
+nonisolated struct AccountDTO: Codable, Equatable {
 
     let id: String
     let name: String
@@ -25,13 +25,25 @@ struct AccountDTO: Codable, Equatable {
     /// Random per-account salt, hex-encoded.
     let salt: String
     let createdAt: Double
+
+    /// Name of this account's photo in `ProfileImageStore`, or nil when it
+    /// still shows initials. Only the reference lives here — the bytes are a
+    /// file, not a defaults entry.
+    ///
+    /// Optional, and therefore absent-tolerant when decoding, so accounts
+    /// written before profile photos existed still load.
+    var avatarFileName: String?
 }
 
-struct SessionDTO: Codable, Equatable {
+nonisolated struct SessionDTO: Codable, Equatable {
     let token: String
     let userId: String
     let name: String
     let email: String
     let userCreatedAt: Double
     let issuedAt: Double
+
+    /// Mirrors `AccountDTO.avatarFileName`, so auto-login at launch restores
+    /// the photo without first re-reading the account list.
+    var avatarFileName: String?
 }

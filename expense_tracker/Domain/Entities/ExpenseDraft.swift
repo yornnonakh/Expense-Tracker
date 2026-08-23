@@ -12,7 +12,7 @@
 
 import Foundation
 
-struct ExpenseDraft: Equatable, Sendable {
+nonisolated struct ExpenseDraft: Equatable, Sendable {
 
     /// Raw text straight from the amount field, e.g. "12.50" or "12,50".
     var amountText: String

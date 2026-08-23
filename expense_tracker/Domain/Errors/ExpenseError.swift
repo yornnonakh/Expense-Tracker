@@ -12,7 +12,7 @@
 
 import Foundation
 
-enum ExpenseError: LocalizedError, Equatable {
+nonisolated enum ExpenseError: LocalizedError, Equatable {
 
     // MARK: Validation
     case invalidAmount

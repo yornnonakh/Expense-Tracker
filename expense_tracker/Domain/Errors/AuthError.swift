@@ -8,7 +8,7 @@
 
 import Foundation
 
-enum AuthError: LocalizedError, Equatable {
+nonisolated enum AuthError: LocalizedError, Equatable {
 
     case invalidEmail
     case emptyName
@@ -18,6 +18,8 @@ enum AuthError: LocalizedError, Equatable {
     case invalidCredentials
     case accountNotFound
     case sessionExpired
+    case unreadableImage
+    case imageTooLarge(maximumBytes: Int)
     case storageFailure(String)
 
     var errorDescription: String? {
@@ -40,6 +42,11 @@ enum AuthError: LocalizedError, Equatable {
             return "We couldn't find an account for that email."
         case .sessionExpired:
             return "Your session expired. Please sign in again."
+        case .unreadableImage:
+            return "We couldn't read that image. Try a different photo."
+        case .imageTooLarge(let maximumBytes):
+            return "That photo is too large. Choose one under "
+                + "\(maximumBytes / 1_048_576) MB."
         case .storageFailure:
             return "We couldn't complete that. Please try again."
         }

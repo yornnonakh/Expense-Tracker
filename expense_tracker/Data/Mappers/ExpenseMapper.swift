@@ -7,7 +7,7 @@
 
 import Foundation
 
-enum ExpenseMapper {
+nonisolated enum ExpenseMapper {
 
     /// Domain -> storage. Total: every valid `Expense` has a representation.
     static func toDTO(_ expense: Expense) -> ExpenseDTO {
