@@ -17,6 +17,8 @@ struct BudgetSummaryHeader: View {
     let greeting: String
     let userName: String
     let initials: String
+    /// The user's profile photo, when they have set one.
+    var avatarImageData: Data?
 
     /// Total spending this month across ALL categories.
     ///
@@ -47,14 +49,13 @@ struct BudgetSummaryHeader: View {
                 Button {
                     onAvatarTap?()
                 } label: {
-                    Text(initials)
-                        .font(.system(size: 15, weight: .bold, design: .rounded))
-                        .foregroundStyle(AppTheme.Colors.primary)
-                        .frame(
-                            width: AppTheme.Metrics.avatarSize,
-                            height: AppTheme.Metrics.avatarSize
-                        )
-                        .background(Circle().fill(.white))
+                    AvatarView(
+                        initials: initials,
+                        imageData: avatarImageData,
+                        // Light fallback: a gradient circle would vanish into
+                        // the gradient header behind it.
+                        fallback: .light
+                    )
                 }
                 .buttonStyle(PressableButtonStyle())
                 .accessibilityLabel("Account")

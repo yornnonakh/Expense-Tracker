@@ -16,7 +16,8 @@ final class AuthRepositoryImpl: AuthRepository {
     func currentSession() async throws -> AuthSession? {
         do {
             guard let dto = try await local.loadSession() else { return nil }
-            let session = try AccountMapper.toDomain(dto)
+            let avatarData = await local.avatarData(fileName: dto.avatarFileName)
+            let session = try AccountMapper.toDomain(dto, avatarImageData: avatarData)
 
             // An expired token must not silently log the user in.
             guard !session.isExpired() else {
@@ -40,8 +41,11 @@ final class AuthRepositoryImpl: AuthRepository {
                 throw AuthError.invalidCredentials
             }
 
-            let user = try AccountMapper.toDomain(account)
-            return try await issueSession(for: user)
+            let avatarData = await local.avatarData(fileName: account.avatarFileName)
+            let user = try AccountMapper.toDomain(account, avatarImageData: avatarData)
+            return try await issueSession(
+                for: user, avatarFileName: account.avatarFileName
+            )
         } catch {
             throw AuthError.wrapping(error)
         }
@@ -53,7 +57,8 @@ final class AuthRepositoryImpl: AuthRepository {
                 name: name, email: email, password: password
             )
             let user = try AccountMapper.toDomain(account)
-            return try await issueSession(for: user)
+            // A brand-new account has no photo yet, so nothing to look up.
+            return try await issueSession(for: user, avatarFileName: nil)
         } catch {
             throw AuthError.wrapping(error)
         }
@@ -72,15 +77,41 @@ final class AuthRepositoryImpl: AuthRepository {
         }
     }
 
+    func updateProfileImage(_ imageData: Data?) async throws -> User {
+        do {
+            // The session is the only thing that says who "me" is, so an
+            // expired or missing one means there is nobody to edit.
+            guard let session = try await local.loadSession() else {
+                throw AuthError.sessionExpired
+            }
+
+            let account = try await local.setAvatar(
+                imageData, forAccountId: session.userId
+            )
+            try await local.updateSessionAvatar(fileName: account.avatarFileName)
+
+            // Hand back the bytes we were given rather than re-reading the
+            // file we just wrote.
+            return try AccountMapper.toDomain(account, avatarImageData: imageData)
+        } catch {
+            throw AuthError.wrapping(error)
+        }
+    }
+
     func signOut() async throws {
         await local.clearSession()
     }
 
     // MARK: - Helpers
 
-    private func issueSession(for user: User) async throws -> AuthSession {
+    private func issueSession(
+        for user: User,
+        avatarFileName: String?
+    ) async throws -> AuthSession {
         let session = AuthSession(token: LocalAuthDataSource.makeToken(), user: user)
-        try await local.saveSession(AccountMapper.toDTO(session))
+        try await local.saveSession(
+            AccountMapper.toDTO(session, avatarFileName: avatarFileName)
+        )
         return session
     }
 }

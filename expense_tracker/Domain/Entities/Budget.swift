@@ -11,7 +11,7 @@
 
 import Foundation
 
-struct Budget: Identifiable, Codable, Hashable, Sendable {
+nonisolated struct Budget: Identifiable, Codable, Hashable, Sendable {
 
     let id: UUID
     var category: ExpenseCategory
@@ -72,7 +72,7 @@ struct Budget: Identifiable, Codable, Hashable, Sendable {
 
 /// A budget paired with the actual spending measured against it.
 /// This is what the Budget tab renders; it is derived, never persisted.
-struct BudgetStatus: Identifiable, Hashable, Sendable {
+nonisolated struct BudgetStatus: Identifiable, Hashable, Sendable {
 
     let budget: Budget
     let spent: Double

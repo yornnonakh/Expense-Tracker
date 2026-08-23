@@ -5,7 +5,7 @@
 
 import Foundation
 
-enum BudgetMapper {
+nonisolated enum BudgetMapper {
 
     static func toDTO(_ budget: Budget) -> BudgetDTO {
         BudgetDTO(

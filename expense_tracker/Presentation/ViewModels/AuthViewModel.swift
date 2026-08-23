@@ -79,6 +79,26 @@ final class AuthViewModel: ObservableObject, ErrorPresenting {
         await seeder.seedIfNeeded()
     }
 
+    /// Swaps in a freshly saved version of the signed-in user, e.g. after a
+    /// profile photo change.
+    ///
+    /// Rebuilds the cached session around the new user as well, so the two
+    /// can't disagree about who is signed in — every screen reads `state`, but
+    /// anything reaching for `session.user` would otherwise see the old copy.
+    /// No-ops when signed out: there is nothing to update, and forcing a
+    /// signed-in state here would resurrect a session the user just ended.
+    func updateCurrentUser(_ user: User) {
+        guard case .signedIn = state else { return }
+
+        state = .signedIn(user)
+
+        if let session {
+            self.session = AuthSession(
+                token: session.token, user: user, issuedAt: session.issuedAt
+            )
+        }
+    }
+
     func signOut() async {
         do {
             try await signOutUseCase.execute()

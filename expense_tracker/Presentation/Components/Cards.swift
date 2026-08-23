@@ -218,19 +218,74 @@ struct SectionHeader: View {
 
 // MARK: - Avatar
 
-/// Initials in a gradient circle. No image loading, so nothing to fail.
+/// The user's profile photo, falling back to their initials when there isn't
+/// one — a missing or unreadable photo degrades to the initials circle rather
+/// than to a gap.
 struct AvatarView: View {
 
+    /// How the initials circle looks when there is no photo. The photo itself
+    /// looks the same either way.
+    enum Fallback {
+        /// White initials on the orange gradient. The default, for anywhere
+        /// the avatar sits on a plain background.
+        case gradient
+        /// Orange initials on white, for use on the gradient header where a
+        /// gradient circle would disappear into its backdrop.
+        case light
+    }
+
     let initials: String
+    var imageData: Data?
     var size: CGFloat = AppTheme.Metrics.avatarSize
+    var fallback: Fallback = .gradient
+
+    /// Decoded once per photo rather than per render.
+    ///
+    /// `Image(uiImage:)` in `body` would re-decode the JPEG on every pass —
+    /// including every dashboard refresh, since the avatar sits in the header
+    /// that redraws with the budget figures.
+    @State private var decodedImage: Image?
 
     var body: some View {
-        Text(initials)
-            .font(.system(size: size * 0.36, weight: .bold, design: .rounded))
-            .foregroundStyle(.white)
-            .frame(width: size, height: size)
-            .background(Circle().fill(AppTheme.Colors.primaryGradient))
-            .accessibilityHidden(true)
+        Group {
+            if let decodedImage {
+                decodedImage
+                    .resizable()
+                    // Fill, not fit: a non-square photo must cover the circle,
+                    // and `clipShape` trims the overflow.
+                    .scaledToFill()
+            } else {
+                Text(initials)
+                    .font(.system(size: size * 0.36, weight: .bold, design: .rounded))
+                    .foregroundStyle(initialsColor)
+                    .frame(width: size, height: size)
+                    .background(Circle().fill(fallbackFill))
+            }
+        }
+        .frame(width: size, height: size)
+        .clipShape(Circle())
+        .task(id: imageData) { decode() }
+        .accessibilityHidden(true)
+    }
+
+    private var initialsColor: Color {
+        switch fallback {
+        case .gradient: return .white
+        case .light: return AppTheme.Colors.primary
+        }
+    }
+
+    private var fallbackFill: AnyShapeStyle {
+        switch fallback {
+        case .gradient: return AnyShapeStyle(AppTheme.Colors.primaryGradient)
+        case .light: return AnyShapeStyle(Color.white)
+        }
+    }
+
+    private func decode() {
+        decodedImage = imageData
+            .flatMap(UIImage.init(data:))
+            .map(Image.init(uiImage:))
     }
 }
 

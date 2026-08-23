@@ -12,7 +12,7 @@
 
 import Foundation
 
-enum ExpenseCategory: String, Codable, CaseIterable, Identifiable, Hashable, Sendable {
+nonisolated enum ExpenseCategory: String, Codable, CaseIterable, Identifiable, Hashable, Sendable {
     case food
     case transport
     case entertainment

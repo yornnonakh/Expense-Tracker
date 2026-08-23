@@ -8,7 +8,7 @@
 
 import Foundation
 
-struct ExpenseStatistics: Equatable, Sendable {
+nonisolated struct ExpenseStatistics: Equatable, Sendable {
 
     let totalSpending: Double
     let averageExpense: Double
@@ -60,7 +60,7 @@ struct ExpenseStatistics: Equatable, Sendable {
 }
 
 /// One slice of the spending pie.
-struct CategoryBreakdown: Identifiable, Equatable, Sendable {
+nonisolated struct CategoryBreakdown: Identifiable, Equatable, Sendable {
     let category: ExpenseCategory
     let amount: Double
     /// Share of total spending, 0...1.
@@ -71,7 +71,7 @@ struct CategoryBreakdown: Identifiable, Equatable, Sendable {
 }
 
 /// One bar in the Home tab's weekly chart.
-struct DailySpending: Identifiable, Equatable, Sendable {
+nonisolated struct DailySpending: Identifiable, Equatable, Sendable {
     /// Start-of-day for the bar.
     let date: Date
     let amount: Double

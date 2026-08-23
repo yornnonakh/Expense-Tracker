@@ -14,7 +14,7 @@
 
 import Foundation
 
-struct ExpenseDTO: Codable, Equatable {
+nonisolated struct ExpenseDTO: Codable, Equatable {
 
     let id: String
     let amount: Double

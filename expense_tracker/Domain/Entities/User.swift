@@ -7,18 +7,35 @@
 
 import Foundation
 
-struct User: Identifiable, Codable, Hashable, Sendable {
+nonisolated struct User: Identifiable, Codable, Hashable, Sendable {
     let id: UUID
     var name: String
     var email: String
     let createdAt: Date
 
-    init(id: UUID = UUID(), name: String, email: String, createdAt: Date = Date()) {
+    /// JPEG bytes of the profile photo, or nil when the avatar falls back to
+    /// initials.
+    ///
+    /// Carried as bytes rather than a file path so views can render it without
+    /// knowing — or waiting on — where the Data layer keeps it. Always the
+    /// downscaled copy from `ProfileImageProcessor`, never the original.
+    var avatarImageData: Data?
+
+    init(
+        id: UUID = UUID(),
+        name: String,
+        email: String,
+        createdAt: Date = Date(),
+        avatarImageData: Data? = nil
+    ) {
         self.id = id
         self.name = name
         self.email = email
         self.createdAt = createdAt
+        self.avatarImageData = avatarImageData
     }
+
+    var hasAvatarImage: Bool { avatarImageData != nil }
 
     /// Up to two letters for the avatar circle, e.g. "Yorn Nona" -> "YN".
     /// Falls back to the email's first character for single-word names.
@@ -41,7 +58,7 @@ struct User: Identifiable, Codable, Hashable, Sendable {
 
 /// Proof of an authenticated user. In a real app the token would come from a
 /// server and live in the Keychain; here it is a locally minted opaque string.
-struct AuthSession: Codable, Hashable, Sendable {
+nonisolated struct AuthSession: Codable, Hashable, Sendable {
     let token: String
     let user: User
     let issuedAt: Date

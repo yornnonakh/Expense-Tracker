@@ -115,10 +115,10 @@ struct EditExpenseView: View {
                 Button("Keep Editing", role: .cancel) {}
             }
         }
-        .onChange(of: viewModel.isSuccess) { isSuccess in
+        .onChange(of: viewModel.isSuccess) { _, isSuccess in
             if isSuccess { dismiss() }
         }
-        .onChange(of: viewModel.didDelete) { didDelete in
+        .onChange(of: viewModel.didDelete) { _, didDelete in
             if didDelete { dismiss() }
         }
     }

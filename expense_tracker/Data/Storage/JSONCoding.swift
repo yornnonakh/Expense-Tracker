@@ -10,7 +10,11 @@
 
 import Foundation
 
-enum JSONCoding {
+/// `nonisolated` because the whole data layer runs off the main actor. The
+/// project compiles with `SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor`, so
+/// without this every `encode`/`decode` call from a data-source actor is an
+/// isolation violation — a warning today, an error in Swift 6 language mode.
+nonisolated enum JSONCoding {
 
     /// ISO-8601 rather than the default `timeIntervalSinceReferenceDate`:
     /// stored data stays human-readable and portable if it ever moves to a

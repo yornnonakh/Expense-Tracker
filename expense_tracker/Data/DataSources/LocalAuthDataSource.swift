@@ -15,9 +15,11 @@ import Foundation
 actor LocalAuthDataSource {
 
     private let store: KeyValueStore
+    private let imageStore: ProfileImageStore
 
-    init(store: KeyValueStore) {
+    init(store: KeyValueStore, imageStore: ProfileImageStore) {
         self.store = store
+        self.imageStore = imageStore
     }
 
     // MARK: - Accounts
@@ -77,6 +79,52 @@ actor LocalAuthDataSource {
         }
     }
 
+    // MARK: - Profile photo
+
+    /// Photo bytes for a stored file name, or nil when there is no photo (or
+    /// the file has gone missing — a deleted file degrades to initials rather
+    /// than failing the sign-in that asked for it).
+    func avatarData(fileName: String?) -> Data? {
+        fileName.flatMap { imageStore.imageData(named: $0) }
+    }
+
+    /// Writes the photo — or deletes it, for nil — and records the change on
+    /// the account, returning the updated record.
+    ///
+    /// The file is written before the account is re-persisted, so a failure
+    /// mid-way leaves an orphaned file rather than an account pointing at
+    /// nothing. The orphan is invisible and gets overwritten by the next save;
+    /// a dangling reference would show as a broken avatar.
+    func setAvatar(_ imageData: Data?, forAccountId id: String) throws -> AccountDTO {
+        var all = try accounts()
+
+        guard let index = all.firstIndex(where: { $0.id == id }) else {
+            throw AuthError.accountNotFound
+        }
+        var account = all[index]
+
+        if let imageData {
+            let name = Self.avatarFileName(forAccountId: id)
+            try imageStore.save(imageData, named: name)
+            account.avatarFileName = name
+        } else {
+            if let existing = account.avatarFileName {
+                imageStore.removeImage(named: existing)
+            }
+            account.avatarFileName = nil
+        }
+
+        all[index] = account
+        try persistAccounts(all)
+        return account
+    }
+
+    /// One file per account, always the same name, so replacing a photo
+    /// overwrites in place and can't accumulate orphans.
+    private static func avatarFileName(forAccountId id: String) -> String {
+        "avatar-\(id).jpg"
+    }
+
     // MARK: - Session
 
     func loadSession() throws -> SessionDTO? {
@@ -102,6 +150,16 @@ actor LocalAuthDataSource {
 
     func clearSession() {
         store.removeObject(forKey: StorageKey.session)
+    }
+
+    /// Keeps the session's copy of the photo reference in step with the
+    /// account it was minted from. Without this, the change would show
+    /// immediately but vanish on the next launch, when auto-login rebuilds the
+    /// user from the session record.
+    func updateSessionAvatar(fileName: String?) throws {
+        guard var dto = try loadSession() else { return }
+        dto.avatarFileName = fileName
+        try saveSession(dto)
     }
 
     // MARK: - Crypto helpers

@@ -12,7 +12,7 @@
 
 import Foundation
 
-protocol KeyValueStore: Sendable {
+nonisolated protocol KeyValueStore: Sendable {
     func data(forKey key: String) -> Data?
     func set(_ data: Data?, forKey key: String)
     func removeObject(forKey key: String)
@@ -22,7 +22,7 @@ protocol KeyValueStore: Sendable {
 
 /// Production store. `UserDefaults` is documented as thread-safe, so this is
 /// safe to call from any actor.
-final class UserDefaultsStore: KeyValueStore, @unchecked Sendable {
+nonisolated final class UserDefaultsStore: KeyValueStore, @unchecked Sendable {
 
     private let defaults: UserDefaults
 
@@ -51,7 +51,7 @@ final class UserDefaultsStore: KeyValueStore, @unchecked Sendable {
 
 /// Drop-in replacement that keeps everything in RAM. Used by SwiftUI previews
 /// so preview data never pollutes the simulator's real defaults.
-final class InMemoryKeyValueStore: KeyValueStore, @unchecked Sendable {
+nonisolated final class InMemoryKeyValueStore: KeyValueStore, @unchecked Sendable {
 
     private let lock = NSLock()
     private var storage: [String: Data] = [:]
@@ -81,7 +81,7 @@ final class InMemoryKeyValueStore: KeyValueStore, @unchecked Sendable {
 /// Every persistence key in the app, in one place. Typos in a string literal
 /// scattered across data sources are silent data loss; this makes them a
 /// compile error instead.
-enum StorageKey {
+nonisolated enum StorageKey {
     static let expenses = "expenses"
     static let budgets = "budgets"
     static let accounts = "auth.accounts"

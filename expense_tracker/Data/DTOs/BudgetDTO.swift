@@ -5,7 +5,7 @@
 
 import Foundation
 
-struct BudgetDTO: Codable, Equatable {
+nonisolated struct BudgetDTO: Codable, Equatable {
 
     let id: String
     let category: String
