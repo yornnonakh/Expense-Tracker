@@ -16,8 +16,17 @@ struct SignInView: View {
     private let authViewModel: AuthViewModel
 
     /// Local navigation within the auth flow.
-    @State private var showSignUp = false
-    @State private var showForgotPassword = false
+    ///
+    /// One optional route rather than a `Bool` per screen: SwiftUI binds at
+    /// most one `navigationDestination(isPresented:)` to a given view, so two
+    /// boolean destinations stacked on the same view leave the inner one dead
+    /// and its button silently does nothing.
+    private enum Route: Hashable {
+        case signUp
+        case forgotPassword
+    }
+
+    @State private var route: Route?
 
     /// The container is a defaulted parameter, so previews and tests can hand
     /// in an isolated graph while production callers omit it.
@@ -52,11 +61,13 @@ struct SignInView: View {
         }
         .scrollDismissesKeyboard(.interactively)
         .screenBackground()
-        .navigationDestination(isPresented: $showSignUp) {
-            SignUpView(authViewModel: authViewModel, container: container)
-        }
-        .navigationDestination(isPresented: $showForgotPassword) {
-            ForgotPasswordView(container: container)
+        .navigationDestination(item: $route) { route in
+            switch route {
+            case .signUp:
+                SignUpView(authViewModel: authViewModel, container: container)
+            case .forgotPassword:
+                ForgotPasswordView(container: container)
+            }
         }
     }
 
@@ -122,7 +133,7 @@ struct SignInView: View {
             HStack {
                 Spacer()
                 Button("Forgot password?") {
-                    showForgotPassword = true
+                    route = .forgotPassword
                 }
                 .font(AppTheme.Typography.caption)
                 .foregroundStyle(AppTheme.Colors.secondary)
@@ -145,7 +156,7 @@ struct SignInView: View {
             }
 
             SecondaryButton(title: "Create an account") {
-                showSignUp = true
+                route = .signUp
             }
         }
     }
