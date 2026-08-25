@@ -87,4 +87,7 @@ nonisolated enum StorageKey {
     static let accounts = "auth.accounts"
     static let session = "auth.session"
     static let hasSeededSampleData = "app.hasSeededSampleData"
+
+    /// Server-clock watermark for the sync cursor. See `SyncStateStore`.
+    static let syncWatermark = "sync.watermark"
 }

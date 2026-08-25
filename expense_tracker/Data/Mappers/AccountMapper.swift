@@ -12,7 +12,31 @@ import Foundation
 
 nonisolated enum AccountMapper {
 
-    static func toDomain(_ dto: AccountDTO, avatarImageData: Data? = nil) throws -> User {
+    // MARK: - Wire -> cache
+
+    /// The server sends `createdAt` in milliseconds; everything on device
+    /// stores seconds. Converting in exactly one place is what stops a
+    /// thousand-fold date error from creeping in somewhere else.
+    static func toCached(
+        _ api: APIUser,
+        avatarFileName: String? = nil
+    ) -> CachedUserDTO {
+        CachedUserDTO(
+            id: api.id,
+            email: api.email,
+            name: api.name,
+            createdAt: api.createdAt / 1000,
+            avatarFileName: avatarFileName,
+            hasRemoteAvatar: api.hasAvatar
+        )
+    }
+
+    // MARK: - Cache -> domain
+
+    static func toDomain(
+        _ dto: CachedUserDTO,
+        avatarImageData: Data? = nil
+    ) throws -> User {
         guard let id = UUID(uuidString: dto.id) else {
             throw AuthError.storageFailure("Account has a malformed id")
         }
@@ -25,33 +49,9 @@ nonisolated enum AccountMapper {
         )
     }
 
-    static func toDTO(_ session: AuthSession, avatarFileName: String?) -> SessionDTO {
-        SessionDTO(
-            token: session.token,
-            userId: session.user.id.uuidString,
-            name: session.user.name,
-            email: session.user.email,
-            userCreatedAt: session.user.createdAt.timeIntervalSince1970,
-            issuedAt: session.issuedAt.timeIntervalSince1970,
-            avatarFileName: avatarFileName
-        )
-    }
-
-    static func toDomain(_ dto: SessionDTO, avatarImageData: Data? = nil) throws -> AuthSession {
-        guard let userId = UUID(uuidString: dto.userId) else {
-            throw AuthError.storageFailure("Session has a malformed user id")
-        }
-        let user = User(
-            id: userId,
-            name: dto.name,
-            email: dto.email,
-            createdAt: Date(timeIntervalSince1970: dto.userCreatedAt),
-            avatarImageData: avatarImageData
-        )
-        return AuthSession(
-            token: dto.token,
-            user: user,
-            issuedAt: Date(timeIntervalSince1970: dto.issuedAt)
-        )
+    /// Wire straight to domain, for the sign-in path where nothing is cached
+    /// yet.
+    static func toDomain(_ api: APIUser, avatarImageData: Data? = nil) throws -> User {
+        try toDomain(toCached(api), avatarImageData: avatarImageData)
     }
 }

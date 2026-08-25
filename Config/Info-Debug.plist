@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!--
+	  DEBUG BUILDS ONLY. Release uses the fully generated Info.plist with App
+	  Transport Security at its defaults, so none of the relaxations below
+	  reach a shipped build — `INFOPLIST_FILE` is set on the Debug
+	  configuration alone.
+
+	  Xcode merges every INFOPLIST_KEY_* build setting into this file, so the
+	  display name, camera usage string and scene manifest still come from the
+	  build settings and are not duplicated here.
+	-->
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<!--
+		  Permits cleartext HTTP to the development server on localhost and to
+		  a Mac's LAN address when testing on a physical device. Scoped to
+		  local networking: arbitrary loads to the public internet stay
+		  blocked even in Debug.
+		-->
+		<key>NSAllowsLocalNetworking</key>
+		<true/>
+	</dict>
+
+	<!--
+	  Read by `AppEnvironment.apiBaseURL`. Matches PORT in server/.env.example.
+	  Override at runtime with the API_BASE_URL environment variable, which
+	  takes precedence over this value.
+	-->
+	<key>APIBaseURL</key>
+	<string>http://localhost:8787</string>
+</dict>
+</plist>

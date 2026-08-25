@@ -9,7 +9,12 @@ import Foundation
 
 enum AuthValidator {
 
-    static let minimumPasswordLength = 6
+    /// Matches the server's `MIN_PASSWORD_LENGTH` exactly.
+    ///
+    /// These two numbers must not drift: a client that accepts a shorter
+    /// password than the server does produces a form that passes validation
+    /// and then fails on submit, with an error the user cannot act on.
+    static let minimumPasswordLength = 8
 
     /// Deliberately permissive. Strict RFC-5322 regexes reject addresses that
     /// really do work; the only authority on deliverability is a confirmation
