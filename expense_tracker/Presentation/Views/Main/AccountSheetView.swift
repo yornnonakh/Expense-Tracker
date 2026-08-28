@@ -24,7 +24,9 @@ struct AccountSheetView: View {
     @State private var showCamera = false
     @State private var pickedItem: PhotosPickerItem?
 
-    init(authViewModel: AuthViewModel, container: DIContainer = .shared) {
+    init(authViewModel: AuthViewModel, container: DIContainer? = nil) {
+        // `nil` rather than `= .shared`; see `DIContainer.shared`.
+        let container = container ?? .shared
         self.authViewModel = authViewModel
         _viewModel = StateObject(
             wrappedValue: container.makeProfileViewModel(authViewModel: authViewModel)

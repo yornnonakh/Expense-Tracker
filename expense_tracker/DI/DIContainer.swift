@@ -34,6 +34,18 @@ final class DIContainer {
     /// Shared graph used by the running app. Views take it as a defaulted
     /// initializer parameter, so any of them can be handed a different
     /// container in a test or preview without touching the call sites.
+    ///
+    /// That parameter defaults to `nil` and resolves to this inside the init
+    /// body, rather than defaulting to `.shared` directly. A default argument
+    /// expression is evaluated at the call site and is nonisolated ahead of
+    /// SE-0411, so `= .shared` reads a main-actor property from a nonisolated
+    /// context — a warning today and an error in Swift 6 language mode, once
+    /// per call site. The init body is main-actor isolated, so the same lookup
+    /// is simply legal there.
+    ///
+    /// Turning on the `IsolatedDefaultValues` upcoming feature to get SE-0411
+    /// early is not the way out: it also isolates stored-property defaults,
+    /// which breaks the `nonisolated init` every ViewModel here relies on.
     static let shared = DIContainer()
 
     // MARK: - Storage

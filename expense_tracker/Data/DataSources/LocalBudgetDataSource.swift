@@ -124,7 +124,7 @@ actor LocalBudgetDataSource {
     }
 
     func compact(olderThan cutoff: Date) throws {
-        let cutoffMillis = cutoff.timeIntervalSince1970 * 1000
+        let cutoffMillis = cutoff.epochMillis
         let remaining = try all().filter { dto in
             guard let deletedAt = dto.deletedAt else { return true }
             if dto.isPendingSync { return true }

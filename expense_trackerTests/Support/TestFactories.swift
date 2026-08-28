@@ -34,7 +34,11 @@ func makeBudget(
     Budget(id: id, category: category, limit: limit, createdAt: createdAt)
 }
 
-func makeUser(
+/// `nonisolated` because `FakeAuthRepository` is an actor and builds its
+/// sessions with this. `User` is already `nonisolated` and `Sendable`, so
+/// there is nothing to hop for. The other builders here are only ever called
+/// from main-actor tests, which is why they do not need the same.
+nonisolated func makeUser(
     id: UUID = UUID(),
     name: String = "Yorn Nona",
     email: String = "test@example.com",

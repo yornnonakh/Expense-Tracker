@@ -75,6 +75,21 @@ export function publicUserById(db: DB, id: string): PublicUser | undefined {
   return row ? toPublic(row) : undefined;
 }
 
+/**
+ * Replaces a user's password hash.
+ *
+ * There is no self-service password change in the app and the reset route is
+ * deliberately not wired to a mail provider, so this is the only way an
+ * existing account's password moves. Used by `scripts/set-password.ts`.
+ */
+export function setPassword(db: DB, userId: string, passwordHash: string): void {
+  db.prepare('UPDATE users SET password_hash = ?, updated_at = ? WHERE id = ?').run(
+    passwordHash,
+    now(),
+    userId,
+  );
+}
+
 export function emailExists(db: DB, email: string): boolean {
   const row = db.prepare('SELECT 1 AS present FROM users WHERE email = ?').get(email);
   return row !== undefined;

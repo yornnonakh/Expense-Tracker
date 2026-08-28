@@ -59,7 +59,7 @@ nonisolated struct ExpenseDTO: Codable, Equatable {
         description: String,
         category: String,
         date: Double,
-        updatedAt: Double = Date().timeIntervalSince1970 * 1000,
+        updatedAt: Double = Date().epochMillis,
         deletedAt: Double? = nil,
         isPendingSync: Bool = true,
         schemaVersion: Int = ExpenseDTO.currentSchemaVersion
@@ -87,7 +87,8 @@ nonisolated struct ExpenseDTO: Codable, Equatable {
         self.date = try container.decode(Double.self, forKey: .date)
         self.schemaVersion = try container.decodeIfPresent(Int.self, forKey: .schemaVersion) ?? 1
 
-        self.deletedAt = try container.decodeIfPresent(Double.self, forKey: .deletedAt)
+        self.deletedAt = try container
+            .decodeIfPresent(Double.self, forKey: .deletedAt)?.wholeEpochMillis
 
         // MIGRATION, schema 1 -> 2.
         //
@@ -96,7 +97,9 @@ nonisolated struct ExpenseDTO: Codable, Equatable {
         // "oldest possible", which means it loses any last-write-wins contest
         // against a record edited on another device. That is the right way to
         // lose — the other device's timestamp is real, this one's is invented.
-        self.updatedAt = try container.decodeIfPresent(Double.self, forKey: .updatedAt) ?? 0
+        self.updatedAt =
+            try container.decodeIfPresent(Double.self, forKey: .updatedAt)?
+            .wholeEpochMillis ?? 0
 
         // ...and it has never been uploaded, so it is pending by definition.
         self.isPendingSync =
@@ -108,7 +111,7 @@ nonisolated struct ExpenseDTO: Codable, Equatable {
     /// A copy stamped as edited now and awaiting upload.
     func markedEdited(at now: Date = Date()) -> ExpenseDTO {
         var copy = self
-        copy.updatedAt = now.timeIntervalSince1970 * 1000
+        copy.updatedAt = EpochMillis.stamp(after: updatedAt, now: now)
         copy.isPendingSync = true
         return copy
     }
@@ -116,7 +119,7 @@ nonisolated struct ExpenseDTO: Codable, Equatable {
     /// A tombstone: same identity, marked deleted and pending.
     func tombstoned(at now: Date = Date()) -> ExpenseDTO {
         var copy = self
-        let millis = now.timeIntervalSince1970 * 1000
+        let millis = EpochMillis.stamp(after: updatedAt, now: now)
         copy.deletedAt = millis
         copy.updatedAt = millis
         copy.isPendingSync = true

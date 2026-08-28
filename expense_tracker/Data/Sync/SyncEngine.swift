@@ -49,7 +49,6 @@ nonisolated struct SyncReport: Equatable, Sendable {
 }
 
 actor SyncEngine {
-
     private let localExpenses: LocalExpenseDataSource
     private let localBudgets: LocalBudgetDataSource
     private let remote: RemoteSyncDataSourceProtocol

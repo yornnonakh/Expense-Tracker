@@ -16,7 +16,9 @@ struct ExpensesListView: View {
 
     private let container: DIContainer
 
-    init(container: DIContainer = .shared) {
+    init(container: DIContainer? = nil) {
+        // `nil` rather than `= .shared`; see `DIContainer.shared`.
+        let container = container ?? .shared
         self.container = container
         _viewModel = StateObject(wrappedValue: container.makeExpensesListViewModel())
     }

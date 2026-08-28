@@ -14,7 +14,10 @@
 
 import Foundation
 
-extension Notification.Name {
+/// `nonisolated` because these names are read from the data layer's actors
+/// (`SyncEngine`, the repositories) as well as from the main actor, and the
+/// project defaults declarations to `MainActor`. Same reasoning as `JSONCoding`.
+nonisolated extension Notification.Name {
 
     /// Posted by `ExpenseRepositoryImpl` after any successful expense write.
     static let expenseDataDidChange = Notification.Name("app.expenseDataDidChange")

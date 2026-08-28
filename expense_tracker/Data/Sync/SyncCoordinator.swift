@@ -78,8 +78,11 @@ final class SyncCoordinator: ObservableObject {
     func start() {
         stop()
 
+        // Each closure carries its own `[weak self]`. Without the inner one,
+        // the `Task` body reads the outer closure's captured variable from
+        // concurrently-executing code — an error in Swift 6 language mode.
         let localChange: @Sendable (Notification) -> Void = { [weak self] _ in
-            Task { @MainActor in self?.requestSync() }
+            Task { @MainActor [weak self] in self?.requestSync() }
         }
 
         observers.append(

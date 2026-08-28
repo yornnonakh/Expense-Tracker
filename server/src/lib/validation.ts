@@ -32,7 +32,7 @@ export const MAX_AMOUNT = 1_000_000_000;
 /** Downscaled JPEG from the client; anything larger is a misuse of the field. */
 export const MAX_AVATAR_BYTES = 2 * 1024 * 1024;
 
-const emailSchema = z
+export const emailSchema = z
   .string()
   .trim()
   .toLowerCase()
@@ -40,7 +40,7 @@ const emailSchema = z
   .regex(/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/, 'Enter a valid email address.')
   .max(254, 'Email address is too long.');
 
-const passwordSchema = z
+export const passwordSchema = z
   .string()
   .min(MIN_PASSWORD_LENGTH, `Password must be at least ${MIN_PASSWORD_LENGTH} characters.`)
   .refine(

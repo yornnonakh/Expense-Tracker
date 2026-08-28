@@ -171,7 +171,7 @@ actor LocalExpenseDataSource {
     /// stays on disk. The age window matters — a tombstone removed too early
     /// stops suppressing the record, and the next pull would resurrect it.
     func compact(olderThan cutoff: Date) throws {
-        let cutoffMillis = cutoff.timeIntervalSince1970 * 1000
+        let cutoffMillis = cutoff.epochMillis
         let remaining = try all().filter { dto in
             guard let deletedAt = dto.deletedAt else { return true }
             if dto.isPendingSync { return true }

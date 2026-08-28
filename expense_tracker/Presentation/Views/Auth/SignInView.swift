@@ -30,7 +30,9 @@ struct SignInView: View {
 
     /// The container is a defaulted parameter, so previews and tests can hand
     /// in an isolated graph while production callers omit it.
-    init(authViewModel: AuthViewModel, container: DIContainer = .shared) {
+    init(authViewModel: AuthViewModel, container: DIContainer? = nil) {
+        // `nil` rather than `= .shared`; see `DIContainer.shared`.
+        let container = container ?? .shared
         self.container = container
         self.authViewModel = authViewModel
         _viewModel = StateObject(

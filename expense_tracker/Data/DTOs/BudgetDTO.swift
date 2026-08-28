@@ -33,7 +33,7 @@ nonisolated struct BudgetDTO: Codable, Equatable {
         category: String,
         limit: Double,
         createdAt: Double,
-        updatedAt: Double = Date().timeIntervalSince1970 * 1000,
+        updatedAt: Double = Date().epochMillis,
         deletedAt: Double? = nil,
         isPendingSync: Bool = true,
         schemaVersion: Int = BudgetDTO.currentSchemaVersion
@@ -56,23 +56,26 @@ nonisolated struct BudgetDTO: Codable, Equatable {
         self.createdAt = try container.decode(Double.self, forKey: .createdAt)
         self.schemaVersion = try container.decodeIfPresent(Int.self, forKey: .schemaVersion) ?? 1
 
-        self.deletedAt = try container.decodeIfPresent(Double.self, forKey: .deletedAt)
+        self.deletedAt = try container
+            .decodeIfPresent(Double.self, forKey: .deletedAt)?.wholeEpochMillis
         // See the migration note in `ExpenseDTO.init(from:)`.
-        self.updatedAt = try container.decodeIfPresent(Double.self, forKey: .updatedAt) ?? 0
+        self.updatedAt =
+            try container.decodeIfPresent(Double.self, forKey: .updatedAt)?
+            .wholeEpochMillis ?? 0
         self.isPendingSync =
             try container.decodeIfPresent(Bool.self, forKey: .isPendingSync) ?? true
     }
 
     func markedEdited(at now: Date = Date()) -> BudgetDTO {
         var copy = self
-        copy.updatedAt = now.timeIntervalSince1970 * 1000
+        copy.updatedAt = EpochMillis.stamp(after: updatedAt, now: now)
         copy.isPendingSync = true
         return copy
     }
 
     func tombstoned(at now: Date = Date()) -> BudgetDTO {
         var copy = self
-        let millis = now.timeIntervalSince1970 * 1000
+        let millis = EpochMillis.stamp(after: updatedAt, now: now)
         copy.deletedAt = millis
         copy.updatedAt = millis
         copy.isPendingSync = true

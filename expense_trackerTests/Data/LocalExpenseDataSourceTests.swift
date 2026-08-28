@@ -111,7 +111,8 @@ final class LocalExpenseDataSourceTests: XCTestCase {
 
         try await source.deleteAll()
 
-        XCTAssertTrue(try await source.fetchAll().isEmpty)
+        let live = try await source.fetchAll()
+        XCTAssertTrue(live.isEmpty)
         let everything = try await source.fetchAllIncludingDeleted()
         XCTAssertEqual(everything.count, 2)
         XCTAssertTrue(everything.allSatisfy(\.isDeleted))
@@ -143,7 +144,8 @@ final class LocalExpenseDataSourceTests: XCTestCase {
 
         try await source.markSynced([dto.id: 5_000])
 
-        XCTAssertTrue(try await source.pendingChanges().isEmpty)
+        let pending = try await source.pendingChanges()
+        XCTAssertTrue(pending.isEmpty)
     }
 
     func testMarkSyncedIgnoresARecordEditedSinceThePush() async throws {
@@ -153,7 +155,8 @@ final class LocalExpenseDataSourceTests: XCTestCase {
         // Acknowledging an older timestamp than the one now stored.
         try await source.markSynced([dto.id: 1_000])
 
-        XCTAssertEqual(try await source.pendingChanges().count, 1)
+        let pending = try await source.pendingChanges()
+        XCTAssertEqual(pending.count, 1)
     }
 
     // MARK: - Remote merge
