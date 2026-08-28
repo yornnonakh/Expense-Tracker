@@ -10,7 +10,9 @@ struct ForgotPasswordView: View {
     @StateObject private var viewModel: ForgotPasswordViewModel
     @Environment(\.dismiss) private var dismiss
 
-    init(container: DIContainer = .shared) {
+    init(container: DIContainer? = nil) {
+        // `nil` rather than `= .shared`; see `DIContainer.shared`.
+        let container = container ?? .shared
         _viewModel = StateObject(wrappedValue: container.makeForgotPasswordViewModel())
     }
 

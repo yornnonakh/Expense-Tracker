@@ -12,21 +12,40 @@
 //
 //  Object graph, built once at launch:
 //
-//      KeyValueStore (UserDefaults)
-//          └── DataSources (actors)
-//                  └── Repositories  (protocol conformances)
-//                          └── UseCases
-//                                  └── ViewModels
-//                                          └── Views
+//      KeyValueStore (UserDefaults) ── ProfileImageStore (files)
+//      KeychainTokenStore  ─────────────┐
+//                                       ├── APIClient (URLSession)
+//                                       │        └── Remote data sources
+//      Local data sources (actors) ─────┤
+//                                       └── Repositories
+//                                                └── Use cases
+//                                                        └── ViewModels
+//                                                                └── Views
+//
+//      SyncEngine (local + remote) ── SyncCoordinator (when to run)
 //
 
 import Foundation
+import OSLog
 
+@MainActor
 final class DIContainer {
 
     /// Shared graph used by the running app. Views take it as a defaulted
     /// initializer parameter, so any of them can be handed a different
     /// container in a test or preview without touching the call sites.
+    ///
+    /// That parameter defaults to `nil` and resolves to this inside the init
+    /// body, rather than defaulting to `.shared` directly. A default argument
+    /// expression is evaluated at the call site and is nonisolated ahead of
+    /// SE-0411, so `= .shared` reads a main-actor property from a nonisolated
+    /// context — a warning today and an error in Swift 6 language mode, once
+    /// per call site. The init body is main-actor isolated, so the same lookup
+    /// is simply legal there.
+    ///
+    /// Turning on the `IsolatedDefaultValues` upcoming feature to get SE-0411
+    /// early is not the way out: it also isolates stored-property defaults,
+    /// which breaks the `nonisolated init` every ViewModel here relies on.
     static let shared = DIContainer()
 
     // MARK: - Storage
@@ -34,19 +53,37 @@ final class DIContainer {
     let keyValueStore: KeyValueStore
     /// Separate from `keyValueStore` on purpose — see `ProfileImageStore`.
     let profileImageStore: ProfileImageStore
+    /// Keychain-backed. Never UserDefaults — see `TokenStore`.
+    let tokenStore: TokenStoring
+
+    // MARK: - Networking
+
+    private let apiClient: APIClient?
+    private let remoteAuth: RemoteAuthDataSourceProtocol
+    private let remoteSync: RemoteSyncDataSourceProtocol?
 
     // MARK: - Data sources
 
     private let localExpenseDataSource: LocalExpenseDataSource
     private let localBudgetDataSource: LocalBudgetDataSource
-    private let localAuthDataSource: LocalAuthDataSource
-    private let remoteExpenseDataSource: RemoteExpenseDataSourceProtocol?
+    private let localSessionDataSource: LocalSessionDataSource
+    private let syncStateStore: SyncStateStoring
 
     // MARK: - Repositories
 
     let expenseRepository: ExpenseRepository
     let budgetRepository: BudgetRepository
     let authRepository: AuthRepository
+
+    /// Concrete type as well as the protocol: the API client's refresh hook
+    /// needs `refreshTokens()`, which is not part of `AuthRepository` because
+    /// nothing in the domain should know tokens exist.
+    private let authRepositoryImpl: AuthRepositoryImpl
+
+    // MARK: - Sync
+
+    let syncEngine: SyncEngine?
+    let syncCoordinator: SyncCoordinator?
 
     // MARK: - Use cases
 
@@ -77,37 +114,75 @@ final class DIContainer {
     ///   - keyValueStore: swap for `InMemoryKeyValueStore` in tests/previews.
     ///   - profileImageStore: swap for `InMemoryProfileImageStore` in
     ///     tests/previews, so neither writes photos into the real container.
-    ///   - enableRemoteSync: when false, no simulated backend is wired in and
-    ///     the repository stays purely local.
+    ///   - tokenStore: swap for `InMemoryTokenStore` in tests, so a test run
+    ///     never reads or writes the simulator's shared Keychain.
+    ///   - remoteAuth / remoteSync: pass fakes to run the whole graph with no
+    ///     network. `nil` for `remoteSync` disables sync entirely.
+    ///   - baseURL: which server to talk to.
     init(
         keyValueStore: KeyValueStore = UserDefaultsStore(),
         profileImageStore: ProfileImageStore = FileProfileImageStore(),
-        enableRemoteSync: Bool = true
+        tokenStore: TokenStoring = KeychainTokenStore(),
+        baseURL: URL = AppEnvironment.apiBaseURL,
+        remoteAuth: RemoteAuthDataSourceProtocol? = nil,
+        remoteSync: RemoteSyncDataSourceProtocol? = nil,
+        enableSync: Bool = true
     ) {
         self.keyValueStore = keyValueStore
         self.profileImageStore = profileImageStore
+        self.tokenStore = tokenStore
+
+        // Networking. A caller that supplied both remotes wants no URLSession
+        // at all, which is what makes an offline test graph possible.
+        let needsClient = remoteAuth == nil || (enableSync && remoteSync == nil)
+        let client: APIClient? = needsClient
+            ? APIClient(baseURL: baseURL, tokenStore: tokenStore)
+            : nil
+        self.apiClient = client
+
+        self.remoteAuth = remoteAuth ?? RemoteAuthDataSource(client: client!)
+        if enableSync {
+            self.remoteSync = remoteSync ?? RemoteSyncDataSource(client: client!)
+        } else {
+            self.remoteSync = nil
+        }
 
         // Data sources
         self.localExpenseDataSource = LocalExpenseDataSource(store: keyValueStore)
         self.localBudgetDataSource = LocalBudgetDataSource(store: keyValueStore)
-        self.localAuthDataSource = LocalAuthDataSource(
+        self.localSessionDataSource = LocalSessionDataSource(
             store: keyValueStore, imageStore: profileImageStore
         )
-        self.remoteExpenseDataSource = enableRemoteSync
-            ? RemoteExpenseDataSource()
-            : nil
+        self.syncStateStore = SyncStateStore(store: keyValueStore)
 
         // Repositories
-        let expenseRepository = ExpenseRepositoryImpl(
-            local: localExpenseDataSource,
-            remote: remoteExpenseDataSource
-        )
+        let expenseRepository = ExpenseRepositoryImpl(local: localExpenseDataSource)
         let budgetRepository = BudgetRepositoryImpl(local: localBudgetDataSource)
-        let authRepository = AuthRepositoryImpl(local: localAuthDataSource)
+        let authRepository = AuthRepositoryImpl(
+            remote: self.remoteAuth,
+            local: localSessionDataSource,
+            tokenStore: tokenStore
+        )
 
         self.expenseRepository = expenseRepository
         self.budgetRepository = budgetRepository
         self.authRepository = authRepository
+        self.authRepositoryImpl = authRepository
+
+        // Sync
+        if let remoteSyncSource = self.remoteSync {
+            let engine = SyncEngine(
+                localExpenses: localExpenseDataSource,
+                localBudgets: localBudgetDataSource,
+                remote: remoteSyncSource,
+                syncState: syncStateStore
+            )
+            self.syncEngine = engine
+            self.syncCoordinator = SyncCoordinator(engine: engine)
+        } else {
+            self.syncEngine = nil
+            self.syncCoordinator = nil
+        }
 
         // Expense use cases
         self.addExpenseUseCase = AddExpenseUseCase(repository: expenseRepository)
@@ -147,6 +222,28 @@ final class DIContainer {
         )
     }
 
+    /// Async wiring that cannot happen in `init`.
+    ///
+    /// The API client refreshes expired tokens by calling back into the auth
+    /// repository, and the auth repository sends its requests through the API
+    /// client. Constructing that cycle is impossible; closing it afterwards is
+    /// trivial. Called once from the root view before anything else runs.
+    func bootstrap() async {
+        guard let apiClient else { return }
+
+        let repository = authRepositoryImpl
+        await apiClient.setRefreshHandler {
+            await repository.refreshTokens() != nil
+        }
+
+        if AppEnvironment.buildConfiguration == .release,
+           !AppEnvironment.isProductionEndpointConfigured {
+            AppLog.network.error(
+                "Release build has no APIBaseURL configured; the app will run offline-only."
+            )
+        }
+    }
+
     // MARK: - ViewModel factories
     //
     // Views call these instead of building ViewModels themselves, so a change
@@ -156,7 +253,8 @@ final class DIContainer {
         AuthViewModel(
             restoreSession: restoreSessionUseCase,
             signOutUseCase: signOutUseCase,
-            seeder: sampleDataSeeder
+            seeder: sampleDataSeeder,
+            syncCoordinator: syncCoordinator
         )
     }
 
@@ -230,12 +328,14 @@ final class DIContainer {
 
 // MARK: - Previews
 
+#if DEBUG
 extension DIContainer {
 
     /// An isolated in-memory graph pre-loaded with sample data.
     ///
     /// Previews must never share `UserDefaults.standard` with the running
-    /// app — a preview that writes would corrupt the simulator's real data.
+    /// app — a preview that writes would corrupt the simulator's real data —
+    /// and must never touch the network or the Keychain.
     static let preview: DIContainer = {
         let store = InMemoryKeyValueStore()
 
@@ -256,7 +356,10 @@ extension DIContainer {
         return DIContainer(
             keyValueStore: store,
             profileImageStore: InMemoryProfileImageStore(),
-            enableRemoteSync: false
+            tokenStore: InMemoryTokenStore(),
+            remoteAuth: StubRemoteAuthDataSource(),
+            remoteSync: StubRemoteSyncDataSource(),
+            enableSync: false
         )
     }()
 
@@ -265,7 +368,11 @@ extension DIContainer {
         DIContainer(
             keyValueStore: InMemoryKeyValueStore(),
             profileImageStore: InMemoryProfileImageStore(),
-            enableRemoteSync: false
+            tokenStore: InMemoryTokenStore(),
+            remoteAuth: StubRemoteAuthDataSource(),
+            remoteSync: StubRemoteSyncDataSource(),
+            enableSync: false
         )
     }
 }
+#endif

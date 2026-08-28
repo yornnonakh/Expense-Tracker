@@ -20,7 +20,9 @@ struct ExpenseDetailView: View {
 
     private let container: DIContainer
 
-    init(expense: Expense, container: DIContainer = .shared) {
+    init(expense: Expense, container: DIContainer? = nil) {
+        // `nil` rather than `= .shared`; see `DIContainer.shared`.
+        let container = container ?? .shared
         _expense = State(initialValue: expense)
         self.container = container
     }

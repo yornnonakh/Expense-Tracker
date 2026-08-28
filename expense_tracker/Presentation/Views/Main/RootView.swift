@@ -13,7 +13,9 @@ struct RootView: View {
     @EnvironmentObject private var authViewModel: AuthViewModel
     private let container: DIContainer
 
-    init(container: DIContainer = .shared) {
+    init(container: DIContainer? = nil) {
+        // `nil` rather than `= .shared`; see `DIContainer.shared`.
+        let container = container ?? .shared
         self.container = container
     }
 
@@ -36,7 +38,15 @@ struct RootView: View {
         // Auto-login runs once at launch. `.task` fires before the first
         // frame is shown, so a returning user goes straight to the dashboard
         // without the sign-in screen flashing.
-        .task { await authViewModel.restore() }
+        //
+        // `bootstrap()` first, and in the same task: it closes the API client
+        // ↔ auth repository cycle that `init` cannot. Restoring a session may
+        // need to refresh an expired token, and without the handler in place
+        // that refresh would have nowhere to go.
+        .task {
+            await container.bootstrap()
+            await authViewModel.restore()
+        }
     }
 }
 

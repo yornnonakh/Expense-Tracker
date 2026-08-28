@@ -10,7 +10,9 @@ struct SignUpView: View {
     @StateObject private var viewModel: SignUpViewModel
     @Environment(\.dismiss) private var dismiss
 
-    init(authViewModel: AuthViewModel, container: DIContainer = .shared) {
+    init(authViewModel: AuthViewModel, container: DIContainer? = nil) {
+        // `nil` rather than `= .shared`; see `DIContainer.shared`.
+        let container = container ?? .shared
         _viewModel = StateObject(
             wrappedValue: container.makeSignUpViewModel(authViewModel: authViewModel)
         )

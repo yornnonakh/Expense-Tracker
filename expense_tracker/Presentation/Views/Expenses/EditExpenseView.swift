@@ -13,7 +13,9 @@ struct EditExpenseView: View {
     @State private var showDeleteConfirmation = false
     @State private var showDiscardConfirmation = false
 
-    init(expense: Expense, container: DIContainer = .shared) {
+    init(expense: Expense, container: DIContainer? = nil) {
+        // `nil` rather than `= .shared`; see `DIContainer.shared`.
+        let container = container ?? .shared
         _viewModel = StateObject(
             wrappedValue: container.makeEditExpenseViewModel(expense: expense)
         )

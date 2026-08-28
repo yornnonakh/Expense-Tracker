@@ -12,7 +12,9 @@ struct BudgetView: View {
     @StateObject private var viewModel: BudgetViewModel
     @State private var budgetPendingDeletion: BudgetStatus?
 
-    init(container: DIContainer = .shared) {
+    init(container: DIContainer? = nil) {
+        // `nil` rather than `= .shared`; see `DIContainer.shared`.
+        let container = container ?? .shared
         _viewModel = StateObject(wrappedValue: container.makeBudgetViewModel())
     }
 

@@ -31,17 +31,22 @@ final class AuthViewModel: ObservableObject, ErrorPresenting {
     private let signOutUseCase: SignOutUseCase
     private let seeder: SampleDataSeeder
 
+    /// Optional because previews and offline test graphs run without sync.
+    private let syncCoordinator: SyncCoordinator?
+
     /// `nonisolated` so SwiftUI can build this inside a `StateObject`
     /// autoclosure, which runs outside actor isolation. The initializer only
     /// assigns stored properties, so nothing here needs the main actor.
     nonisolated init(
         restoreSession: RestoreSessionUseCase,
         signOutUseCase: SignOutUseCase,
-        seeder: SampleDataSeeder
+        seeder: SampleDataSeeder,
+        syncCoordinator: SyncCoordinator? = nil
     ) {
         self.restoreSession = restoreSession
         self.signOutUseCase = signOutUseCase
         self.seeder = seeder
+        self.syncCoordinator = syncCoordinator
     }
 
     var currentUser: User? {
@@ -77,6 +82,11 @@ final class AuthViewModel: ObservableObject, ErrorPresenting {
 
         // Give a brand-new install something to look at. No-ops afterwards.
         await seeder.seedIfNeeded()
+
+        // Sync starts only once somebody is signed in: every endpoint it calls
+        // needs a token, so starting earlier would just log 401s.
+        syncCoordinator?.start()
+        await syncCoordinator?.syncNow()
     }
 
     /// Swaps in a freshly saved version of the signed-in user, e.g. after a
@@ -105,6 +115,12 @@ final class AuthViewModel: ObservableObject, ErrorPresenting {
         } catch {
             present(error)
         }
+
+        // Wipe local data and the sync cursor. Without this the next account
+        // to sign in on this device would inherit the previous one's expenses
+        // and then upload them as its own.
+        await syncCoordinator?.reset()
+
         // Clear local state even if the repository call failed — the user
         // asked to sign out, and leaving them signed in would be worse than
         // a stale token on disk.

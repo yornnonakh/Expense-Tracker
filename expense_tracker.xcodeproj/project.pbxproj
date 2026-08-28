@@ -6,8 +6,19 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXContainerItemProxy section */
+		9431DB0A303AA7D0002DA8F0 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 94E15D1B3039B9AB00C6F5D2 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 9431D9FC303AA7D0002DA8F0;
+			remoteInfo = expense_tracker;
+		};
+/* End PBXContainerItemProxy section */
+
 /* Begin PBXFileReference section */
 		9431D9FD303AA7D0002DA8F0 /* expense_tracker.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = expense_tracker.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		9431DB02303AA7D0002DA8F0 /* expense_trackerTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = expense_trackerTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -16,10 +27,22 @@
 			path = expense_tracker;
 			sourceTree = "<group>";
 		};
+		9431DB03303AA7D0002DA8F0 /* expense_trackerTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = expense_trackerTests;
+			sourceTree = "<group>";
+		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		9431D9FA303AA7D0002DA8F0 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		9431DB05303AA7D0002DA8F0 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -33,6 +56,7 @@
 			isa = PBXGroup;
 			children = (
 				9431D9FE303AA7D0002DA8F0 /* expense_tracker */,
+				9431DB03303AA7D0002DA8F0 /* expense_trackerTests */,
 				94E15D243039B9AB00C6F5D2 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -41,6 +65,7 @@
 			isa = PBXGroup;
 			children = (
 				9431D9FD303AA7D0002DA8F0 /* expense_tracker.app */,
+				9431DB02303AA7D0002DA8F0 /* expense_trackerTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -70,6 +95,29 @@
 			productReference = 9431D9FD303AA7D0002DA8F0 /* expense_tracker.app */;
 			productType = "com.apple.product-type.application";
 		};
+		9431DB01303AA7D0002DA8F0 /* expense_trackerTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 9431DB06303AA7D0002DA8F0 /* Build configuration list for PBXNativeTarget "expense_trackerTests" */;
+			buildPhases = (
+				9431DB04303AA7D0002DA8F0 /* Sources */,
+				9431DB05303AA7D0002DA8F0 /* Frameworks */,
+				9431DB0B303AA7D0002DA8F0 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				9431DB09303AA7D0002DA8F0 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				9431DB03303AA7D0002DA8F0 /* expense_trackerTests */,
+			);
+			name = expense_trackerTests;
+			packageProductDependencies = (
+			);
+			productName = expense_trackerTests;
+			productReference = 9431DB02303AA7D0002DA8F0 /* expense_trackerTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -82,6 +130,10 @@
 				TargetAttributes = {
 					9431D9FC303AA7D0002DA8F0 = {
 						CreatedOnToolsVersion = 26.3;
+					};
+					9431DB01303AA7D0002DA8F0 = {
+						CreatedOnToolsVersion = 26.3;
+						TestTargetID = 9431D9FC303AA7D0002DA8F0;
 					};
 				};
 			};
@@ -100,12 +152,20 @@
 			projectRoot = "";
 			targets = (
 				9431D9FC303AA7D0002DA8F0 /* expense_tracker */,
+				9431DB01303AA7D0002DA8F0 /* expense_trackerTests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
 		9431D9FB303AA7D0002DA8F0 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		9431DB0B303AA7D0002DA8F0 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -122,7 +182,22 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		9431DB04303AA7D0002DA8F0 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		9431DB09303AA7D0002DA8F0 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 9431D9FC303AA7D0002DA8F0 /* expense_tracker */;
+			targetProxy = 9431DB0A303AA7D0002DA8F0 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		9431DA06303AA7D3002DA8F0 /* Debug */ = {
@@ -138,6 +213,7 @@
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "Config/Info-Debug.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = "Expense Tracker";
 				INFOPLIST_KEY_NSCameraUsageDescription = "Take a photo to use as your profile picture.";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
@@ -210,6 +286,54 @@
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		9431DB07303AA7D0002DA8F0 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 49XF2C8BCG;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.yornnona.expensetracker.tests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/expense_tracker.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/expense_tracker";
+			};
+			name = Debug;
+		};
+		9431DB08303AA7D0002DA8F0 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 49XF2C8BCG;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.yornnona.expensetracker.tests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/expense_tracker.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/expense_tracker";
 			};
 			name = Release;
 		};
@@ -337,6 +461,15 @@
 			buildConfigurations = (
 				9431DA06303AA7D3002DA8F0 /* Debug */,
 				9431DA07303AA7D3002DA8F0 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		9431DB06303AA7D0002DA8F0 /* Build configuration list for PBXNativeTarget "expense_trackerTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				9431DB07303AA7D0002DA8F0 /* Debug */,
+				9431DB08303AA7D0002DA8F0 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

@@ -21,8 +21,10 @@ struct CategoryDetailView: View {
     init(
         category: ExpenseCategory,
         range: DateRangeFilter,
-        container: DIContainer = .shared
+        container: DIContainer? = nil
     ) {
+        // `nil` rather than `= .shared`; see `DIContainer.shared`.
+        let container = container ?? .shared
         self.category = category
         self.range = range
         self.container = container

@@ -14,7 +14,9 @@ struct AddExpenseSheetView: View {
     /// context (e.g. an empty budget card).
     private let initialCategory: ExpenseCategory?
 
-    init(initialCategory: ExpenseCategory? = nil, container: DIContainer = .shared) {
+    init(initialCategory: ExpenseCategory? = nil, container: DIContainer? = nil) {
+        // `nil` rather than `= .shared`; see `DIContainer.shared`.
+        let container = container ?? .shared
         self.initialCategory = initialCategory
         _viewModel = StateObject(wrappedValue: container.makeAddExpenseViewModel())
     }

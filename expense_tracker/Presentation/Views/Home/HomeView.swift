@@ -20,7 +20,9 @@ struct HomeView: View {
     /// Lets the dashboard's "See all" jump the user to another tab.
     @Binding private var selectedTab: MainTabView.Tab
 
-    init(selectedTab: Binding<MainTabView.Tab>, container: DIContainer = .shared) {
+    init(selectedTab: Binding<MainTabView.Tab>, container: DIContainer? = nil) {
+        // `nil` rather than `= .shared`; see `DIContainer.shared`.
+        let container = container ?? .shared
         _selectedTab = selectedTab
         self.container = container
         _viewModel = StateObject(wrappedValue: container.makeHomeViewModel())

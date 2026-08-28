@@ -2,48 +2,66 @@
 //  AccountDTO.swift
 //  Data Layer — DTOs
 //
-//  Stored account record and session envelope.
+//  The cached copy of the signed-in user.
 //
-//  SECURITY NOTE: this is a local demo with no backend. Passwords are stored
-//  as a salted SHA-256 digest rather than plaintext, so a casual look at the
-//  app container doesn't hand over credentials. That is NOT production-grade
-//  auth — a shipping app would authenticate against a server, never persist a
-//  password on device, and keep the session token in the Keychain rather than
-//  UserDefaults. Marked clearly so this never gets mistaken for the real thing.
+//  WHAT IS NO LONGER HERE, and why it matters: this file used to hold an
+//  `AccountDTO` with a salted password digest, because the app verified
+//  sign-ins itself. Authentication now happens on the server, so the device
+//  never sees, hashes or stores password material at all. The strongest
+//  version of "don't leak the user's password" is not having it.
+//
+//  What remains is a profile cache: enough to render the account screen and
+//  restore a session at launch without a network round trip. Tokens are NOT
+//  here either — they live in the Keychain, via `KeychainTokenStore`.
 //
 
 import Foundation
 
-nonisolated struct AccountDTO: Codable, Equatable {
+nonisolated struct CachedUserDTO: Codable, Equatable {
 
     let id: String
-    let name: String
-    /// Always stored lowercased; used as the unique key for an account.
+    /// Always stored lowercased.
     let email: String
-    /// Hex-encoded SHA-256 of (salt + password).
-    let passwordHash: String
-    /// Random per-account salt, hex-encoded.
-    let salt: String
+    let name: String
+    /// Epoch seconds.
     let createdAt: Double
 
-    /// Name of this account's photo in `ProfileImageStore`, or nil when it
-    /// still shows initials. Only the reference lives here — the bytes are a
-    /// file, not a defaults entry.
+    /// Name of this user's photo in `ProfileImageStore`, or nil when the
+    /// avatar falls back to initials. Only the reference lives here — the
+    /// bytes are a file, not a defaults entry.
     ///
-    /// Optional, and therefore absent-tolerant when decoding, so accounts
+    /// Optional, and therefore absent-tolerant when decoding, so records
     /// written before profile photos existed still load.
     var avatarFileName: String?
-}
 
-nonisolated struct SessionDTO: Codable, Equatable {
-    let token: String
-    let userId: String
-    let name: String
-    let email: String
-    let userCreatedAt: Double
-    let issuedAt: Double
+    /// True when the server says this account has a photo. Lets the app tell
+    /// "no photo" apart from "photo not downloaded to this device yet".
+    var hasRemoteAvatar: Bool
 
-    /// Mirrors `AccountDTO.avatarFileName`, so auto-login at launch restores
-    /// the photo without first re-reading the account list.
-    var avatarFileName: String?
+    init(
+        id: String,
+        email: String,
+        name: String,
+        createdAt: Double,
+        avatarFileName: String? = nil,
+        hasRemoteAvatar: Bool = false
+    ) {
+        self.id = id
+        self.email = email
+        self.name = name
+        self.createdAt = createdAt
+        self.avatarFileName = avatarFileName
+        self.hasRemoteAvatar = hasRemoteAvatar
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.id = try container.decode(String.self, forKey: .id)
+        self.email = try container.decode(String.self, forKey: .email)
+        self.name = try container.decode(String.self, forKey: .name)
+        self.createdAt = try container.decode(Double.self, forKey: .createdAt)
+        self.avatarFileName = try container.decodeIfPresent(String.self, forKey: .avatarFileName)
+        self.hasRemoteAvatar =
+            try container.decodeIfPresent(Bool.self, forKey: .hasRemoteAvatar) ?? false
+    }
 }

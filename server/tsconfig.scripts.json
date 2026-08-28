@@ -1,0 +1,14 @@
+// Type checking for the operator scripts in `scripts/`.
+//
+// They cannot go in the main tsconfig: that one sets `rootDir: "src"` to fix
+// the layout under `dist/`, and adding a sibling directory to it would push
+// every emitted file down a level and break `npm start`. This config emits
+// nothing and exists purely so `npm run typecheck` covers the scripts too.
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "rootDir": "."
+  },
+  "include": ["scripts/**/*.ts", "src/**/*.ts"]
+}

@@ -15,7 +15,6 @@ nonisolated struct User: Identifiable, Codable, Hashable, Sendable {
 
     /// JPEG bytes of the profile photo, or nil when the avatar falls back to
     /// initials.
-    ///
     /// Carried as bytes rather than a file path so views can render it without
     /// knowing — or waiting on — where the Data layer keeps it. Always the
     /// downscaled copy from `ProfileImageProcessor`, never the original.
