@@ -15,9 +15,18 @@ enum AppFormatters {
 
     // MARK: - Currency
 
+    /// Pinned to USD rather than the device locale.
+    ///
+    /// Amounts are stored in dollars, so the symbol is a fact about the data,
+    /// not a display preference. Left locale-derived, a phone set to Cambodia
+    /// would render a stored dollar amount with a riel symbol — labelling
+    /// $3.00 as ៛3.00, off by a factor of four thousand — and the riel figure
+    /// beside it would then repeat the same symbol for a different number.
     private static let currency: NumberFormatter = {
         let formatter = NumberFormatter()
         formatter.numberStyle = .currency
+        formatter.currencyCode = "USD"
+        formatter.currencySymbol = "$"
         formatter.maximumFractionDigits = 2
         formatter.minimumFractionDigits = 2
         return formatter
@@ -27,6 +36,8 @@ enum AppFormatters {
     private static let compactCurrency: NumberFormatter = {
         let formatter = NumberFormatter()
         formatter.numberStyle = .currency
+        formatter.currencyCode = "USD"
+        formatter.currencySymbol = "$"
         formatter.maximumFractionDigits = 0
         return formatter
     }()
@@ -42,6 +53,36 @@ enum AppFormatters {
     static func currencyRounded(_ amount: Double) -> String {
         compactCurrency.string(from: NSNumber(value: amount))
             ?? String(format: "%.0f", amount)
+    }
+
+    // MARK: - Khmer riel
+
+    /// Riel are written without a minor unit — there is no "cent" in
+    /// circulation — so a fractional riel would be a quantity that cannot
+    /// exist. Grouping is fixed rather than locale-derived so the figure reads
+    /// the same on a phone set to any region.
+    private static let riel: NumberFormatter = {
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .decimal
+        formatter.maximumFractionDigits = 0
+        formatter.groupingSeparator = ","
+        formatter.usesGroupingSeparator = true
+        return formatter
+    }()
+
+    static let rielSymbol = "\u{17DB}"
+
+    /// "៛12,100".
+    static func riel(_ amount: Double) -> String {
+        let digits = riel.string(from: NSNumber(value: amount))
+            ?? String(format: "%.0f", amount)
+        return rielSymbol + digits
+    }
+
+    /// "$3.00 · ៛12,100" — the stored amount first, the derived one second.
+    /// The order is deliberate: USD is what was recorded, riel is a courtesy.
+    static func dual(usd: Double, rate: ExchangeRate) -> String {
+        "\(currency(usd)) \u{00B7} \(riel(rate.khr(fromUSD: usd)))"
     }
 
     /// "$1.2K" / "$3.4M" for tight spaces like chart axis labels.

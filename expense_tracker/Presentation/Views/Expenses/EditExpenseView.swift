@@ -206,6 +206,8 @@ struct EditExpenseView: View {
     }
 }
 
+#if DEBUG
+
 // MARK: - Preview
 
 #Preview("Edit expense") {
@@ -219,3 +221,5 @@ struct EditExpenseView: View {
         container: .preview
     )
 }
+
+#endif

@@ -23,10 +23,15 @@ struct ContentView: View {
     }
 }
 
+#if DEBUG
+
 // MARK: - Preview
 
 #Preview {
     let container = DIContainer.preview
     return ContentView(container: container)
         .environmentObject(container.makeAuthViewModel())
+        .environmentObject(DIContainer.previewCurrencyStore)
 }
+
+#endif

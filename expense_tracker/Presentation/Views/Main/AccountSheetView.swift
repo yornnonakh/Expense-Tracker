@@ -208,6 +208,8 @@ struct AccountSheetView: View {
     }
 }
 
+#if DEBUG
+
 // MARK: - Preview
 
 #Preview("Account") {
@@ -229,3 +231,5 @@ struct AccountSheetView: View {
     }
     return Harness()
 }
+
+#endif

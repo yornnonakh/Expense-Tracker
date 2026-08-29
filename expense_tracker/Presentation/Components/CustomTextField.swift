@@ -126,7 +126,13 @@ struct AmountInputField: View {
     let title: String
     @Binding var amountText: String
     var errorMessage: String?
-    var currencySymbol: String = Locale.current.currencySymbol ?? "$"
+    /// Dollars, not the device's currency.
+    ///
+    /// Amounts are stored in USD, so this symbol states what the typed number
+    /// means — it is not a display preference. Derived from `Locale.current`,
+    /// a phone set to Cambodia would put ៛ in front of a field whose value is
+    /// recorded as dollars, inviting someone to type 12000 for a $3 coffee.
+    var currencySymbol: String = "$"
 
     @FocusState private var isFocused: Bool
 
@@ -179,6 +185,8 @@ struct AmountInputField: View {
     }
 }
 
+#if DEBUG
+
 // MARK: - Preview
 
 #Preview("Fields") {
@@ -213,3 +221,5 @@ struct AmountInputField: View {
     }
     return Harness()
 }
+
+#endif

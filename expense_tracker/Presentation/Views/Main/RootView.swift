@@ -86,10 +86,15 @@ struct SplashView: View {
     }
 }
 
+#if DEBUG
+
 // MARK: - Preview
 
 #Preview("Root") {
     let container = DIContainer.preview
     return RootView(container: container)
         .environmentObject(container.makeAuthViewModel())
+        .environmentObject(DIContainer.previewCurrencyStore)
 }
+
+#endif

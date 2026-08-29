@@ -163,6 +163,8 @@ struct HomeView: View {
     }
 }
 
+#if DEBUG
+
 // MARK: - Preview
 
 #Preview("Home") {
@@ -173,7 +175,10 @@ struct HomeView: View {
         var body: some View {
             HomeView(selectedTab: $tab, container: container)
                 .environmentObject(container.makeAuthViewModel())
+                .environmentObject(DIContainer.previewCurrencyStore)
         }
     }
     return Harness()
 }
+
+#endif

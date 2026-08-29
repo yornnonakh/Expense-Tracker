@@ -9,6 +9,8 @@ import SwiftUI
 
 struct BudgetView: View {
 
+    @EnvironmentObject private var currency: CurrencyStore
+
     @StateObject private var viewModel: BudgetViewModel
     @State private var budgetPendingDeletion: BudgetStatus?
 
@@ -122,6 +124,10 @@ struct BudgetView: View {
                     .font(AppTheme.Typography.caption)
                     .foregroundStyle(AppTheme.Colors.textSecondary)
             }
+
+            Text(currency.riel(viewModel.summary.remaining))
+                .font(AppTheme.Typography.caption)
+                .foregroundStyle(AppTheme.Colors.textSecondary)
 
             ProgressBarView(
                 fraction: viewModel.summary.fractionUsed,
@@ -288,8 +294,13 @@ private struct BudgetEditorSheet: View {
     }
 }
 
+#if DEBUG
+
 // MARK: - Preview
 
 #Preview("Budgets") {
     BudgetView(container: .preview)
+        .environmentObject(DIContainer.previewCurrencyStore)
 }
+
+#endif

@@ -276,6 +276,8 @@ struct ThemedDivider: View {
     }
 }
 
+#if DEBUG
+
 // MARK: - Preview
 
 #Preview("Misc") {
@@ -313,3 +315,5 @@ struct ThemedDivider: View {
     }
     return Harness()
 }
+
+#endif

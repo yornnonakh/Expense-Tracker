@@ -179,8 +179,12 @@ struct AddExpenseSheetView: View {
     }
 }
 
+#if DEBUG
+
 // MARK: - Preview
 
 #Preview("Add expense") {
     AddExpenseSheetView(container: .preview)
 }
+
+#endif

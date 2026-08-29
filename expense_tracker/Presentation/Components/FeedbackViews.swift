@@ -296,6 +296,8 @@ extension View {
     }
 }
 
+#if DEBUG
+
 // MARK: - Preview
 
 #Preview("Feedback") {
@@ -321,3 +323,5 @@ extension View {
     }
     .screenBackground()
 }
+
+#endif

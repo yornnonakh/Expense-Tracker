@@ -9,6 +9,8 @@ import SwiftUI
 
 struct ExpensesListView: View {
 
+    @EnvironmentObject private var currency: CurrencyStore
+
     @StateObject private var viewModel: ExpensesListViewModel
 
     @State private var showAddExpense = false
@@ -126,7 +128,7 @@ struct ExpensesListView: View {
             HStack {
                 Text("\(viewModel.filteredExpenses.count) expenses")
                 Spacer()
-                Text(AppFormatters.currency(viewModel.filteredTotal))
+                Text(currency.dual(viewModel.filteredTotal))
                     .foregroundStyle(AppTheme.Colors.textPrimary)
             }
             .font(AppTheme.Typography.caption)
@@ -228,8 +230,13 @@ struct ExpensesListView: View {
     }
 }
 
+#if DEBUG
+
 // MARK: - Preview
 
 #Preview("Expenses") {
     ExpensesListView(container: .preview)
+        .environmentObject(DIContainer.previewCurrencyStore)
 }
+
+#endif

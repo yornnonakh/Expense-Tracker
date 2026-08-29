@@ -21,9 +21,17 @@ struct expense_trackerApp: App {
     /// every tab switch, and so exactly one instance exists.
     @StateObject private var authViewModel: AuthViewModel
 
+    /// The USD→KHR rate, held at the top for the same reason as the session:
+    /// one instance, surviving navigation, so a rate fetched once is not
+    /// re-fetched per screen.
+    @StateObject private var currencyStore: CurrencyStore
+
     init() {
         _authViewModel = StateObject(
             wrappedValue: DIContainer.shared.makeAuthViewModel()
+        )
+        _currencyStore = StateObject(
+            wrappedValue: DIContainer.shared.makeCurrencyStore()
         )
     }
 
@@ -31,6 +39,8 @@ struct expense_trackerApp: App {
         WindowGroup {
             ContentView(container: container)
                 .environmentObject(authViewModel)
+                .environmentObject(currencyStore)
+                .task { await currencyStore.load() }
                 // Colours come from the asset catalog with light and dark
                 // variants, so the app follows the system appearance rather
                 // than forcing one.

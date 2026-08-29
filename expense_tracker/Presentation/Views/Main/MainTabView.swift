@@ -67,10 +67,15 @@ struct MainTabView: View {
     }
 }
 
+#if DEBUG
+
 // MARK: - Preview
 
 #Preview("Main tabs") {
     let container = DIContainer.preview
     return MainTabView(container: container)
         .environmentObject(container.makeAuthViewModel())
+        .environmentObject(DIContainer.previewCurrencyStore)
 }
+
+#endif

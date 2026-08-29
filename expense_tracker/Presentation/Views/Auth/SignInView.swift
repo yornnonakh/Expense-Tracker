@@ -50,11 +50,8 @@ struct SignInView: View {
                         viewModel.clearError()
                     })
                 }
-
                 form
-
                 actions
-
                 footer
             }
             .padding(AppTheme.Spacing.lg)
@@ -186,6 +183,8 @@ struct SignInView: View {
     }
 }
 
+#if DEBUG
+
 // MARK: - Preview
 
 #Preview("Sign in") {
@@ -197,3 +196,5 @@ struct SignInView: View {
     }
     .environmentObject(auth)
 }
+
+#endif

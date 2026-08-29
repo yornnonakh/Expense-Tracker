@@ -212,6 +212,8 @@ struct PressableButtonStyle: ButtonStyle {
     }
 }
 
+#if DEBUG
+
 // MARK: - Previews
 
 #Preview("Buttons") {
@@ -232,3 +234,5 @@ struct PressableButtonStyle: ButtonStyle {
     .padding()
     .screenBackground()
 }
+
+#endif

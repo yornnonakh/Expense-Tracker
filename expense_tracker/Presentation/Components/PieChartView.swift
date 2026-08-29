@@ -232,6 +232,8 @@ private struct PieArc {
     let breakdown: CategoryBreakdown
 }
 
+#if DEBUG
+
 // MARK: - Preview
 
 #Preview("Pie chart") {
@@ -265,3 +267,5 @@ private struct PieArc {
     }
     return Harness()
 }
+
+#endif

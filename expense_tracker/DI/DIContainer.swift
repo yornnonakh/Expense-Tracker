@@ -68,6 +68,7 @@ final class DIContainer {
     private let localBudgetDataSource: LocalBudgetDataSource
     private let localSessionDataSource: LocalSessionDataSource
     private let syncStateStore: SyncStateStoring
+    private let exchangeRateRepository: ExchangeRateRepository
 
     // MARK: - Repositories
 
@@ -126,6 +127,7 @@ final class DIContainer {
         baseURL: URL = AppEnvironment.apiBaseURL,
         remoteAuth: RemoteAuthDataSourceProtocol? = nil,
         remoteSync: RemoteSyncDataSourceProtocol? = nil,
+        remoteExchangeRate: RemoteExchangeRateDataSourceProtocol? = nil,
         enableSync: Bool = true
     ) {
         self.keyValueStore = keyValueStore
@@ -154,6 +156,13 @@ final class DIContainer {
             store: keyValueStore, imageStore: profileImageStore
         )
         self.syncStateStore = SyncStateStore(store: keyValueStore)
+
+        // Rates come from a third party, never through `client` — see
+        // RemoteExchangeRateDataSource on why our token must not go there.
+        self.exchangeRateRepository = ExchangeRateRepositoryImpl(
+            remote: remoteExchangeRate ?? RemoteExchangeRateDataSource(),
+            store: keyValueStore
+        )
 
         // Repositories
         let expenseRepository = ExpenseRepositoryImpl(local: localExpenseDataSource)
@@ -248,6 +257,10 @@ final class DIContainer {
     //
     // Views call these instead of building ViewModels themselves, so a change
     // to a ViewModel's dependencies never ripples into view code.
+
+    func makeCurrencyStore() -> CurrencyStore {
+        CurrencyStore(repository: exchangeRateRepository)
+    }
 
     func makeAuthViewModel() -> AuthViewModel {
         AuthViewModel(
@@ -364,6 +377,13 @@ extension DIContainer {
     }()
 
     /// An empty in-memory graph, for exercising empty states.
+    /// A rate store for previews. Uses the compiled-in fallback rate rather
+    /// than reaching the network, so a canvas render is deterministic and
+    /// works with no connection.
+    static var previewCurrencyStore: CurrencyStore {
+        CurrencyStore(repository: StubExchangeRateRepository())
+    }
+
     static func makeEmptyPreview() -> DIContainer {
         DIContainer(
             keyValueStore: InMemoryKeyValueStore(),

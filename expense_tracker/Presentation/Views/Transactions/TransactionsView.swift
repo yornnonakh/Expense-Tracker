@@ -9,6 +9,8 @@ import SwiftUI
 
 struct TransactionsView: View {
 
+    @EnvironmentObject private var currency: CurrencyStore
+
     @StateObject private var viewModel: TransactionsViewModel
     private let container: DIContainer
 
@@ -57,7 +59,7 @@ struct TransactionsView: View {
             HStack {
                 Text("\(viewModel.transactionCount) transactions")
                 Spacer()
-                Text(AppFormatters.currency(viewModel.rangeTotal))
+                Text(currency.dual(viewModel.rangeTotal))
                     .foregroundStyle(AppTheme.Colors.textPrimary)
             }
             .font(AppTheme.Typography.caption)
@@ -129,8 +131,13 @@ struct TransactionsView: View {
     }
 }
 
+#if DEBUG
+
 // MARK: - Preview
 
 #Preview("Transactions") {
     TransactionsView(container: .preview)
+        .environmentObject(DIContainer.previewCurrencyStore)
 }
+
+#endif

@@ -9,6 +9,8 @@ import SwiftUI
 
 struct ExpenseListItem: View {
 
+    @EnvironmentObject private var currency: CurrencyStore
+
     let expense: Expense
 
     /// Hidden inside date-grouped sections, where the header already says it.
@@ -40,11 +42,21 @@ struct ExpenseListItem: View {
 
             Spacer(minLength: AppTheme.Spacing.xs)
 
-            Text(AppFormatters.currency(expense.amount))
-                .font(AppTheme.Typography.amount)
-                .foregroundStyle(AppTheme.Colors.textPrimary)
-                .lineLimit(1)
-                .minimumScaleFactor(0.75)
+            // Dollars lead and keep the amount typography; riel sits under
+            // them in caption style. Stacked rather than inline because a row
+            // is already tight, and two full-size figures would fight for the
+            // same horizontal space on a narrow phone.
+            VStack(alignment: .trailing, spacing: 0) {
+                Text(AppFormatters.currency(expense.amount))
+                    .font(AppTheme.Typography.amount)
+                    .foregroundStyle(AppTheme.Colors.textPrimary)
+
+                Text(currency.riel(expense.amount))
+                    .font(AppTheme.Typography.caption)
+                    .foregroundStyle(AppTheme.Colors.textSecondary)
+            }
+            .lineLimit(1)
+            .minimumScaleFactor(0.75)
 
             if showsChevron {
                 Image(systemName: "chevron.right")
@@ -60,6 +72,7 @@ struct ExpenseListItem: View {
         .accessibilityLabel(
             "\(expense.description), \(expense.category.displayName), "
             + "\(AppFormatters.currency(expense.amount)), "
+            + "\(currency.riel(expense.amount)), "
             + AppFormatters.mediumDate(expense.date)
         )
     }
@@ -75,6 +88,8 @@ struct ExpenseRowCard: View {
             .cardStyle(padding: AppTheme.Spacing.sm)
     }
 }
+
+#if DEBUG
 
 // MARK: - Preview
 
@@ -94,5 +109,8 @@ struct ExpenseRowCard: View {
         )
     }
     .padding()
+    .environmentObject(DIContainer.previewCurrencyStore)
     .screenBackground()
 }
+
+#endif

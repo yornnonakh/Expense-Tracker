@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!--
+	  RELEASE BUILDS ONLY.
+
+	  Note what is NOT here: no NSAppTransportSecurity key at all. App
+	  Transport Security stays at its strict defaults, so a shipped build can
+	  only talk HTTPS. The local-networking relaxation in Info-Debug.plist
+	  deliberately does not reach production.
+
+	  Xcode merges every INFOPLIST_KEY_* build setting into this file, so the
+	  display name, camera usage string and scene manifest still come from the
+	  build settings and are not duplicated here.
+	-->
+
+	<!--
+	  ► REPLACE THIS BEFORE SHIPPING. ◄
+
+	  Set this to your deployed server, e.g. https://expense-tracker.fly.dev
+	  It must be HTTPS: App Transport Security blocks cleartext in Release.
+
+	  The placeholder below is intentionally the `.invalid` host that
+	  `AppEnvironment.unconfiguredProductionBaseURL` checks for, which keeps
+	  the existing safety net armed: while this is unchanged,
+	  `isProductionEndpointConfigured` stays false and DIContainer logs
+	  "Release build has no APIBaseURL configured". Swapping in a
+	  plausible-but-wrong URL would silence that warning and fail at runtime
+	  instead, which is the exact failure the placeholder exists to prevent.
+	-->
+	<key>APIBaseURL</key>
+	<string>https://api.expensetracker.invalid</string>
+</dict>
+</plist>

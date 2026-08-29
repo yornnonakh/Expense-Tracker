@@ -7,6 +7,8 @@ import SwiftUI
 
 struct ExpenseDetailView: View {
 
+    @EnvironmentObject private var currency: CurrencyStore
+
     /// Local copy so an edit can update the screen without a round-trip
     /// through the parent list.
     @State private var expense: Expense
@@ -98,6 +100,12 @@ struct ExpenseDetailView: View {
                 .minimumScaleFactor(0.5)
                 .lineLimit(1)
 
+            Text(currency.riel(expense.amount))
+                .font(AppTheme.Typography.body)
+                .foregroundStyle(AppTheme.Colors.textSecondary)
+                .minimumScaleFactor(0.5)
+                .lineLimit(1)
+
             Text(expense.description)
                 .font(AppTheme.Typography.body)
                 .foregroundStyle(AppTheme.Colors.textSecondary)
@@ -126,7 +134,7 @@ struct ExpenseDetailView: View {
             ThemedDivider()
             DetailRow(
                 label: "Amount",
-                value: AppFormatters.currency(expense.amount),
+                value: currency.dual(expense.amount),
                 systemImage: "dollarsign.circle"
             )
             ThemedDivider()
@@ -188,6 +196,8 @@ struct ExpenseDetailView: View {
     }
 }
 
+#if DEBUG
+
 // MARK: - Preview
 
 #Preview("Expense detail") {
@@ -202,4 +212,7 @@ struct ExpenseDetailView: View {
             container: .preview
         )
     }
+    .environmentObject(DIContainer.previewCurrencyStore)
 }
+
+#endif

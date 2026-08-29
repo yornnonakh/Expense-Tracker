@@ -82,12 +82,29 @@ export function publicUserById(db: DB, id: string): PublicUser | undefined {
  * deliberately not wired to a mail provider, so this is the only way an
  * existing account's password moves. Used by `scripts/set-password.ts`.
  */
+/**
+ * Changes the password and kills every existing session in one transaction.
+ *
+ * The revocation is not optional. A password change is how someone locks an
+ * attacker out, and a refresh token issued before the change would otherwise
+ * keep working for its full 30-day life — so the account would still be
+ * compromised by exactly the party the change was meant to evict. Doing both
+ * here rather than at each call site means a future self-service reset
+ * endpoint cannot forget the second half.
+ */
 export function setPassword(db: DB, userId: string, passwordHash: string): void {
-  db.prepare('UPDATE users SET password_hash = ?, updated_at = ? WHERE id = ?').run(
-    passwordHash,
-    now(),
-    userId,
-  );
+  const changedAt = now();
+
+  db.transaction(() => {
+    db.prepare('UPDATE users SET password_hash = ?, updated_at = ? WHERE id = ?').run(
+      passwordHash,
+      changedAt,
+      userId,
+    );
+    db.prepare(
+      'UPDATE refresh_tokens SET revoked_at = ? WHERE user_id = ? AND revoked_at IS NULL',
+    ).run(changedAt, userId);
+  })();
 }
 
 export function emailExists(db: DB, email: string): boolean {

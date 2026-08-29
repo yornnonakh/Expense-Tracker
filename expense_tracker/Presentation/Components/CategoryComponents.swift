@@ -240,6 +240,8 @@ struct CategoryLegendRow: View {
     }
 }
 
+#if DEBUG
+
 // MARK: - Preview
 
 #Preview("Category components") {
@@ -264,3 +266,5 @@ struct CategoryLegendRow: View {
     }
     return Harness()
 }
+
+#endif

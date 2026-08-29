@@ -126,6 +126,8 @@ struct ForgotPasswordView: View {
     }
 }
 
+#if DEBUG
+
 // MARK: - Preview
 
 #Preview("Forgot password") {
@@ -133,3 +135,5 @@ struct ForgotPasswordView: View {
         ForgotPasswordView(container: .makeEmptyPreview())
     }
 }
+
+#endif

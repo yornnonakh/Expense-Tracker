@@ -166,6 +166,8 @@ struct SignUpView: View {
     }
 }
 
+#if DEBUG
+
 // MARK: - Preview
 
 #Preview("Sign up") {
@@ -176,3 +178,5 @@ struct SignUpView: View {
         SignUpView(authViewModel: auth, container: container)
     }
 }
+
+#endif

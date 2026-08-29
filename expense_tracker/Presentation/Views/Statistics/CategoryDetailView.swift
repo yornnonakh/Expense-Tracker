@@ -148,6 +148,8 @@ struct CategoryDetailView: View {
     }
 }
 
+#if DEBUG
+
 // MARK: - Preview
 
 #Preview("Category detail") {
@@ -159,3 +161,5 @@ struct CategoryDetailView: View {
         )
     }
 }
+
+#endif

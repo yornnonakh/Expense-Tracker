@@ -125,6 +125,8 @@ struct WeeklyBarChartView: View {
     }
 }
 
+#if DEBUG
+
 // MARK: - Preview
 
 #Preview("Weekly chart") {
@@ -143,3 +145,5 @@ struct WeeklyBarChartView: View {
         .padding()
         .screenBackground()
 }
+
+#endif

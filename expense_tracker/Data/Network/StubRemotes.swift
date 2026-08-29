@@ -260,3 +260,18 @@ actor StubRemoteSyncDataSource: RemoteSyncDataSourceProtocol {
 }
 
 #endif
+
+#if DEBUG
+
+/// Returns the fallback rate without touching the network, for previews and
+/// tests that care about layout rather than conversion accuracy.
+nonisolated struct StubExchangeRateRepository: ExchangeRateRepository {
+    var rate: ExchangeRate = .fallback
+
+    func currentRate() async -> ExchangeRate { rate }
+
+    @discardableResult
+    func refreshIfNeeded() async -> ExchangeRate { rate }
+}
+
+#endif

@@ -9,3 +9,18 @@ xcuserdata/
 *.dSYM.zip
 *.dSYM
 .DS_Store
+
+# Server
+server/node_modules/
+server/dist/
+
+# Secrets. Never commit real JWT secrets; .env.example is the template.
+.env
+.env.*
+!.env.example
+!.env.production.example
+
+# SQLite database — contains real user accounts and password hashes.
+server/data/*.db
+server/data/*.db-shm
+server/data/*.db-wal

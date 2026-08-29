@@ -14,6 +14,10 @@ struct StatisticCard: View {
 
     let title: String
     let value: String
+    /// The same figure in riel, shown under the dollar value. Separate from
+    /// `subtitle`, which already carries context like "per expense" — the two
+    /// say different things and a card can want both.
+    var secondaryValue: String?
     let systemImage: String
     var tint: Color = AppTheme.Colors.primary
     var subtitle: String?
@@ -42,6 +46,14 @@ struct StatisticCard: View {
                 .minimumScaleFactor(0.6)
                 .lineLimit(1)
 
+            if let secondaryValue {
+                Text(secondaryValue)
+                    .font(AppTheme.Typography.caption)
+                    .foregroundStyle(AppTheme.Colors.textSecondary)
+                    .minimumScaleFactor(0.6)
+                    .lineLimit(1)
+            }
+
             if let subtitle {
                 Text(subtitle)
                     .font(AppTheme.Typography.caption)
@@ -51,7 +63,9 @@ struct StatisticCard: View {
         }
         .cardStyle()
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel("\(title): \(value)")
+        .accessibilityLabel(
+            secondaryValue.map { "\(title): \(value), \($0)" } ?? "\(title): \(value)"
+        )
     }
 }
 
@@ -289,6 +303,8 @@ struct AvatarView: View {
     }
 }
 
+#if DEBUG
+
 // MARK: - Preview
 
 #Preview("Cards") {
@@ -326,3 +342,5 @@ struct AvatarView: View {
     }
     .screenBackground()
 }
+
+#endif

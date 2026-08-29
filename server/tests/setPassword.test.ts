@@ -81,4 +81,45 @@ describe('users.setPassword', () => {
     expect(after?.email).toBe(session.email);
     expect(after?.created_at).toBe(before?.created_at);
   });
+
+  it('revokes every existing session, so a password change evicts an attacker', async () => {
+    const session = await signUp(harness.app, { password: 'original-password' });
+    const bystander = await signUp(harness.app, { password: 'bystander-password' });
+
+    // Deliberately NOT exercised before the change: refresh tokens rotate on
+    // use, so spending this one first would make the 401 below pass for the
+    // wrong reason — consumed rather than revoked.
+    users.setPassword(harness.db, session.userId, await hashPassword('rotated-password'));
+
+    // An unused refresh token minted before the change must not survive it.
+    // Otherwise whoever stole it keeps access for its full 30-day life, and
+    // the password change protects nothing against the party it was aimed at.
+    await request(harness.app)
+      .post(`${API_PREFIX}/auth/refresh`)
+      .send({ refreshToken: session.refreshToken })
+      .expect(401);
+
+    // Only that user's sessions end.
+    await request(harness.app)
+      .post(`${API_PREFIX}/auth/refresh`)
+      .send({ refreshToken: bystander.refreshToken })
+      .expect(200);
+  });
+
+  it('leaves the account able to sign in again afterwards', async () => {
+    const session = await signUp(harness.app, { password: 'original-password' });
+
+    users.setPassword(harness.db, session.userId, await hashPassword('rotated-password'));
+
+    // Revoking sessions must not lock the legitimate owner out.
+    const after = await request(harness.app)
+      .post(`${API_PREFIX}/auth/signin`)
+      .send({ email: session.email, password: 'rotated-password' })
+      .expect(200);
+
+    await request(harness.app)
+      .post(`${API_PREFIX}/auth/refresh`)
+      .send({ refreshToken: after.body.refreshToken })
+      .expect(200);
+  });
 });

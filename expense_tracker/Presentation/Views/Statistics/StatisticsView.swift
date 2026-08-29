@@ -9,6 +9,8 @@ import SwiftUI
 
 struct StatisticsView: View {
 
+    @EnvironmentObject private var currency: CurrencyStore
+
     @StateObject private var viewModel: StatisticsViewModel
     private let container: DIContainer
 
@@ -137,6 +139,7 @@ struct StatisticsView: View {
             StatisticCard(
                 title: "Total spent",
                 value: AppFormatters.currency(viewModel.statistics.totalSpending),
+                secondaryValue: currency.riel(viewModel.statistics.totalSpending),
                 systemImage: "creditcard.fill",
                 tint: AppTheme.Colors.primary,
                 subtitle: "\(viewModel.statistics.expenseCount) expenses"
@@ -145,6 +148,7 @@ struct StatisticsView: View {
             StatisticCard(
                 title: "Average",
                 value: AppFormatters.currency(viewModel.statistics.averageExpense),
+                secondaryValue: currency.riel(viewModel.statistics.averageExpense),
                 systemImage: "chart.bar.fill",
                 tint: AppTheme.Colors.secondary,
                 subtitle: "per expense"
@@ -155,6 +159,9 @@ struct StatisticsView: View {
                 value: AppFormatters.currency(
                     viewModel.statistics.highestExpense?.amount ?? 0
                 ),
+                secondaryValue: currency.riel(
+                    viewModel.statistics.highestExpense?.amount ?? 0
+                ),
                 systemImage: "arrow.up.right",
                 tint: AppTheme.Colors.danger,
                 subtitle: viewModel.statistics.highestExpense?.description
@@ -163,6 +170,9 @@ struct StatisticsView: View {
             StatisticCard(
                 title: "Lowest",
                 value: AppFormatters.currency(
+                    viewModel.statistics.lowestExpense?.amount ?? 0
+                ),
+                secondaryValue: currency.riel(
                     viewModel.statistics.lowestExpense?.amount ?? 0
                 ),
                 systemImage: "arrow.down.right",
@@ -203,8 +213,13 @@ struct StatisticsView: View {
     }
 }
 
+#if DEBUG
+
 // MARK: - Preview
 
 #Preview("Statistics") {
     StatisticsView(container: .preview)
+        .environmentObject(DIContainer.previewCurrencyStore)
 }
+
+#endif
